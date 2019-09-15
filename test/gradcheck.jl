@@ -19,18 +19,6 @@ gradcheck(f, xs...) =
 
 Random.seed!(42)
 
-@testset "conv" begin
-    x = rand(7, 7, 3, 10); w = rand(3, 3, 3, 1)
-    @test gradcheck((x, w) -> sum(conv2d(x, w)), x, w)
-    @test gradcheck((x, w) -> sum(conv2d(x, w; padding=1, stride=2)), x, w)
-end
-
-@testset "pooling" begin
-    x = rand(7, 7, 3, 10);
-    @test gradcheck(x -> sum(maxpool2d(x, 2)), x)
-    @test gradcheck(x -> sum(maxpool2d(x, 2; stride=2)), x)
-end
-
 # @test gradient(//, 2, 3) === (1//3, -2//9)
 
 # @test gradtest((x, W, b) -> σ.(W*x .+ b), 5, (2,5), 2)

@@ -18,6 +18,36 @@ end
 
 
 ################################################################################
+#                               Sequential                                     #
+################################################################################
+
+
+# TODO: stub, we can't differentiate through it right now since Yota.field_paths doesn't track
+# indices of seq
+mutable struct Sequential
+    seq::Tuple
+end
+
+Sequential(args...) = Sequential(args)
+
+function Base.show(io::IO, s::Sequential)
+    println(io, "Sequential(")
+    for m in s.seq
+        println(io, "  $m,")
+    end
+    print(io, ")")
+end
+
+
+function (s::Sequential)(x)
+    for m in s.seq
+        x = m(x)
+    end
+    return x
+end
+
+
+################################################################################
 #                           Convolutions                                       #
 ################################################################################
 

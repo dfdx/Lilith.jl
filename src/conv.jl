@@ -1,4 +1,3 @@
-import NNlib
 import NNlib: DenseConvDims, PoolDims
 
 ## conv2d
