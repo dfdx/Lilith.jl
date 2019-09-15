@@ -12,6 +12,7 @@ export
     softmax,
     logsoftmax,
     Linear,
+    Sequential,
     Conv2d
 
 include("core.jl")

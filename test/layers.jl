@@ -8,7 +8,11 @@
     @test gp[2] == gl[1][(:b,)]
 
     # Sequential
-    # TODO
+    l1 = Linear(5, 4); l2 = Linear(4, 3); s = Sequential(l1, l2); x = rand(5, 10)
+    gp = grad((l1, l2, x) -> sum(l2(l1(x))), s.seq[1], s.seq[2], x)[2]
+    gs = grad((s, x) -> sum(s(x)), s, x)[2]
+    @test gp[1][(:W,)] == gs[1][(:seq, 1, :W)]
+    @test gp[2][(:b,)] == gs[1][(:seq, 2, :b)]
     
     # Conv2d
     x = rand(7, 7, 3, 10); c = Conv2d(3, 5, 3)
