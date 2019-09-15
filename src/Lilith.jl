@@ -2,8 +2,10 @@ module Lilith
 
 export
     grad,
+    # conv
     conv2d,
     maxpool2d,
+    # activations
     logistic,
     sigmoid,
     softplus,
@@ -11,6 +13,9 @@ export
     leakyrelu,
     softmax,
     logsoftmax,
+    # losses
+    nllloss,
+    # layers
     Linear,
     Sequential,
     Conv2d
