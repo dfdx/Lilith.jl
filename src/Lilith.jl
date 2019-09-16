@@ -15,10 +15,13 @@ export
     logsoftmax,
     # losses
     nllloss,
-    # layers
+    crossentropyloss,
+    NLLLoss,
+    CrossEntropyLoss,
+    # general layers
     Linear,
     Sequential,
-    Conv2d
+    Conv2d    
 
 include("core.jl")
 

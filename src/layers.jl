@@ -74,3 +74,24 @@ end
     conv2d(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
 
 
+
+################################################################################
+#                           Loss Functions                                     #
+################################################################################
+
+mutable struct NLLLoss
+end
+
+Base.show(io::IO, loss::NLLLoss) = print(io, "NLLLoss()")
+
+(loss::NLLLoss)(logp::AbstractMatrix, c::Union{AbstractMatrix{<:Real}, AbstractVector{<:Real}}) =
+    nllloss(logp, c)
+
+
+mutable struct CrossEntropyLoss
+end
+
+Base.show(io::IO, loss::CrossEntropyLoss) = print(io, "CrossEntropyLoss()")
+
+(loss::CrossEntropyLoss)(x::AbstractMatrix, c::Union{AbstractMatrix{<:Real}, AbstractVector{<:Real}}) =
+    crossentropyloss(x, c)

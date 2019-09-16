@@ -17,5 +17,14 @@
     # Conv2d
     x = rand(7, 7, 3, 10); c = Conv2d(3, 5, 3)
     @test grad((x, w) -> sum(conv2d(x, w)), x, c.W)[2][2] == grad((x, c) -> sum(c(x)), x, c)[2][2][(:W,)]
+
+    # NLLLoss
+    x = rand(5, 4); x = log.(x ./ sum(x; dims=1)); c = [3, 2, 1, 4, 5]
+    @test grad((x, c) -> nllloss(x, c), x, c)[2][1] == grad((x, c) -> NLLLoss()(x, c), x, c)[2][1]
+
+    # CrossEntropyLoss
+    x = rand(5, 4); c = [3, 2, 1, 4, 5]
+    @test (grad((x, c) -> crossentropyloss(x, c), x, c)[2][1] ==
+           grad((x, c) -> CrossEntropyLoss()(x, c), x, c)[2][1])
     
 end

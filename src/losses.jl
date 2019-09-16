@@ -54,6 +54,10 @@ function nllloss2(logp::AbstractMatrix, c::Vector{<:Real})
 end
 
 
+crossentropyloss(x::AbstractMatrix, c::Union{AbstractMatrix{<:Real}, AbstractVector{<:Real}}) =
+    nllloss(softmax(x), c)
+
+
 function register_loss_derivs()
     @diffrule nllloss(x, _c) x ∇nllloss(dy, x, _c)
     @nodiff nllloss(x, _c) _c
