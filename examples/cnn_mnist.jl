@@ -1,4 +1,6 @@
-## Based on: https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#sphx-glr-beginner-blitz-neural-networks-tutorial-py
+## Based on PyTorch tutorial: https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#sphx-glr-beginner-blitz-neural-networks-tutorial-py
+## Note that that tutorial and this file use dummy inputs just to demonstrate API,
+## for fully working example see cnn_mnist2.jl
 
 using Lilith
 
