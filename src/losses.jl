@@ -54,8 +54,19 @@ function nllloss2(logp::AbstractMatrix, c::Vector{<:Real})
 end
 
 
+################################################################################
+#                               Cross Entropy                                  #
+################################################################################
+
 crossentropyloss(x::AbstractMatrix, c::Union{AbstractMatrix{<:Real}, AbstractVector{<:Real}}) =
     nllloss(softmax(x), c)
+
+
+################################################################################
+#                                 Mean Squared Loss                            #
+################################################################################
+
+mseloss(inp::AbstractMatrix, target::AbstractMatrix) = sum((inp .- target) .^ 2)
 
 
 function register_loss_derivs()

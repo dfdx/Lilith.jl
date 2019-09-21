@@ -16,12 +16,17 @@ export
     # losses
     nllloss,
     crossentropyloss,
+    mseloss,
     NLLLoss,
     CrossEntropyLoss,
+    MSELoss,
     # general layers
     Linear,
     Sequential,
-    Conv2d    
+    Conv2d,
+    # training
+    fit!
+
 
 include("core.jl")
 
