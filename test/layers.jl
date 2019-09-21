@@ -26,5 +26,10 @@
     x = rand(5, 4); c = [3, 2, 1, 4, 5]
     @test (grad((x, c) -> crossentropyloss(x, c), x, c)[2][1] ==
            grad((x, c) -> CrossEntropyLoss()(x, c), x, c)[2][1])
+
+    # MSELoss
+    x = rand(5, 4); x_target = rand(5, 4)
+    @test (grad((x, x_target) -> mseloss(x, x_target), x, x_target)[2][1] ==
+           grad((x, x_target) -> MSELoss()(x, x_target), x, x_target)[2][1])
     
 end

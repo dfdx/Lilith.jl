@@ -7,7 +7,11 @@ mutable struct Linear{T}
     b::AbstractVector{T}
 end
 
-Linear(in_features::Int, out_features::Int) = Linear(randn(out_features, in_features), randn(out_features))
+function Linear(in_features::Int, out_features::Int)
+    k_sqrt = sqrt(1 / in_features)
+    d = Uniform(-k_sqrt, k_sqrt)
+    return Linear(rand(d, out_features, in_features), rand(d, out_features))
+end
 
 function Base.show(io::IO, l::Linear)
     o, i = size(l.W)
@@ -61,7 +65,9 @@ end
 function Conv2d(in_channels::Int, out_channels::Int, kernel_size::Union{Int, NTuple{2, Int}};
                 stride=1, padding=0, dilation=1)
     kernel_tuple = kernel_size isa Tuple ? kernel_size : (kernel_size, kernel_size)
-    W = randn(kernel_tuple..., in_channels, out_channels)
+    # init weights same as in https://pytorch.org/docs/stable/nn.html#conv2d
+    k_sqrt = sqrt(1 / (in_channels * prod(kernel_tuple)))
+    W = rand(Uniform(-k_sqrt, k_sqrt), kernel_tuple..., in_channels, out_channels)
     return Conv2d(W, stride, padding, dilation)
 end
 
@@ -95,3 +101,12 @@ Base.show(io::IO, loss::CrossEntropyLoss) = print(io, "CrossEntropyLoss()")
 
 (loss::CrossEntropyLoss)(x::AbstractMatrix, c::Union{AbstractMatrix{<:Real}, AbstractVector{<:Real}}) =
     crossentropyloss(x, c)
+
+
+mutable struct MSELoss
+end
+
+Base.show(io::IO, loss::MSELoss) = print(io, "MSELoss()")
+
+
+(loss::MSELoss)(x::AbstractMatrix, x_target::AbstractMatrix) = mseloss(x, x_target)
