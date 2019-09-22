@@ -2,7 +2,7 @@ using Yota
 using Distributions
 using MLDataUtils
 import NNlib
-import CUDAdrv
+import CUDAapi
 
 
 include("conv.jl")
@@ -14,7 +14,7 @@ include("device.jl")
 include("fit.jl")
 
 
-if CUDAdrv.has_cuda()
+if has_cuda()
     try
         include("cuda.jl")
     catch ex
