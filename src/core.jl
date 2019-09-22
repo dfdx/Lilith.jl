@@ -2,7 +2,7 @@ using Yota
 using Distributions
 using MLDataUtils
 import NNlib
-import CUDAapi
+using CUDAapi
 
 
 include("conv.jl")
