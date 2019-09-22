@@ -2,9 +2,9 @@
 #                               Linear                                         #
 ################################################################################
 
-mutable struct Linear{T}
-    W::AbstractMatrix{T}
-    b::AbstractVector{T}
+mutable struct Linear
+    W::AbstractMatrix{T} where T
+    b::AbstractVector{T} where T
 end
 
 function Linear(in_features::Int, out_features::Int)
@@ -55,8 +55,8 @@ end
 #                           Convolutions                                       #
 ################################################################################
 
-mutable struct Conv2d{T}
-    W::AbstractArray{T,4}
+mutable struct Conv2d
+    W::AbstractArray{T,4} where T
     stride
     padding
     dilation

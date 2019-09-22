@@ -2,6 +2,8 @@
 
 using Lilith
 using MLDatasets
+import Yota: trace
+
 
 # include("../src/core.jl")
 # __init__()
@@ -34,10 +36,12 @@ end
 
 
 function main()
+    device = best_available_device()
     m = Net()
+    m = to_device(device, m)
     X, Y = MNIST.traindata();
     X = convert(Array{Float64}, reshape(X, 28, 28, 1, :));
     Y .+= 1   # replace class label like "0" with its position like "1"
     loss_fn = NLLLoss()
-    @time partial_fit!(m, X, Y, loss_fn; lr=1e-2, batch_size=64)
+    @time fit!(m, X, Y, loss_fn; n_epochs=10, lr=1e-2, batch_size=64, device=device)
 end

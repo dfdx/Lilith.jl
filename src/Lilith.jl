@@ -25,7 +25,12 @@ export
     Sequential,
     Conv2d,
     # training
-    fit!
+    fit!,
+    # device API (reexport from Yota)
+    best_available_device,
+    to_device,
+    CPU,
+    GPU
 
 
 include("core.jl")

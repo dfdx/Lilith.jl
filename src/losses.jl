@@ -16,10 +16,10 @@
 """
 Negative log-likelihood. ŷ should be a vector of normalized log probabilities.
 """
-function nllloss(ŷ::AbstractMatrix, c::Vector{<:Real})
+function nllloss(ŷ::AbstractMatrix, c::AbstractVector{<:Real})
     loss = 0
     for j=1:size(ŷ, 2)
-        i = c[j]
+        i = Int(c[j])
         loss += -ŷ[i, j]
     end
     return loss / length(c)
@@ -30,7 +30,7 @@ function ∇nllloss(ds::Real, ŷ::AbstractMatrix, c::AbstractVector{<:Real})
     len = length(c)
     # assuming instances are on columns, we can make it configurable later
     for j=1:size(ŷ, 2)
-        i = c[j]
+        i = Int(c[j])
         dŷ[i, j] = -ds / length(c)
     end
     return dŷ
