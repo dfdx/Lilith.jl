@@ -5,6 +5,7 @@ import NNlib
 using CUDAapi
 
 
+include("utils.jl")
 include("conv.jl")
 include("activations.jl")
 include("losses.jl")
@@ -22,7 +23,6 @@ if has_cuda()
         @warn "CUDA is installed, but CuArrays.jl fails to load" exception=(ex,catch_backtrace())
     end
 end
-
 
 
 function __init__()

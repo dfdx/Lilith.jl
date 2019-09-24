@@ -1,9 +1,11 @@
 logistic(x) = one(x) / (one(x) + exp(-x))
 ∇logistic(dy, x) = logistic(x) * (one(x) - logistic(x)) * dy
 const sigmoid = logistic
+# + culogistic in cuda.jl
 
 softplus(x) = log(exp(x) + one(x))
 ∇softplus(dy, x) = logistic(x) * dy
+# + cusoftplus in cuda.jl
 
 relu(x::Number) = max(zero(x), x)
 ∇relu(dy::Real, y::Real) = ifelse(y > 0, dy, zero(y))
@@ -28,6 +30,3 @@ function register_activation_derivs()
     @diffrule softmax(x) x ∇softmax(dy, x)
     @diffrule logsoftmax(x) x ∇logsoftmax(dy, x)
 end
-
-# relu(x) = NNlib.relu(x)
-# ∇relu(dy, x) = 

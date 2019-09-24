@@ -1,4 +1,5 @@
 using CuArrays
+using CUDAnative
 
 # CuArrays doesn't provide a dedicated version of conv() for CuArrays, and so call to
 # NNlib.conv(CuArray(), CuArray()) leads to CPU-based algorithm on GPU arrays, which is terribly slow.
@@ -41,3 +42,18 @@ function ∇maxpool2d_x(dy::CuArray, y::CuArray, x::CuArray, kernel_size; stride
     dx = similar(x)
     return NNlib.∇maxpool!(dx, dy, y, x, pdims)
 end
+
+
+## activations
+
+culogistic(x) = one(x) / (one(x) + CUDAnative.exp(-x))
+CuArrays.cufunc(::typeof(logistic)) = culogistic
+
+∇culogistic(dy, x) = culogistic(x) * (one(x) - culogistic(x)) * dy
+CuArrays.cufunc(::typeof(∇logistic)) = ∇culogistic
+
+cusoftplus(x) = CUDAnative.log(CUDAnative.exp(x) + one(x))
+CuArrays.cufunc(::typeof(softplus)) = cusoftplus
+
+∇cusoftplus(dy, x) = culogistic(x) * dy
+CuArrays.cufunc(::typeof(∇softplus)) = ∇cusoftplus
