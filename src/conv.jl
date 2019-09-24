@@ -2,6 +2,7 @@ import NNlib: DenseConvDims, PoolDims
 
 ## conv2d
 
+
 function conv2d(x, w; stride=1, padding=0, dilation=1)
     cdims = DenseConvDims(x, w; stride=stride, padding=padding, dilation=dilation)
     return NNlib.conv(x, w, cdims)

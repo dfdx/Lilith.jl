@@ -60,7 +60,7 @@ def test(model, device, test_loader, log_interval):
         100. * correct / len(test_loader.dataset)))
 
 def main():
-    use_cuda = False
+    use_cuda = True
     torch.manual_seed(42)
     device = torch.device("cuda" if use_cuda else "cpu")
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
