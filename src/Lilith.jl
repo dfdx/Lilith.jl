@@ -31,6 +31,9 @@ export
     to_device,
     CPU,
     GPU
+    # metrics (not exportrd by default)
+
+
 
 
 include("core.jl")

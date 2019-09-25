@@ -13,6 +13,7 @@ include("layers.jl")
 include("optim.jl")
 include("device.jl")
 include("fit.jl")
+include("metrics.jl")
 
 
 if has_cuda()
