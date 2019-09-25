@@ -15,5 +15,5 @@ function Yota.to_device(device::CPU, x)
     end
 end
 
-(device::CPU)(x) = to_device(device, x) 
-(device::GPU)(x) = to_device(device, x) 
+(device::CPU)(x) = to_device(device, x)
+(device::GPU)(x) = to_device(device, x)
