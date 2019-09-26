@@ -25,8 +25,11 @@ end
 
     @test grad(x -> sum(logistic.(x)), x)[2][1] ≈ grad(x -> sum(logistic.(x)), d_x)[2][1]
     @test grad(x -> sum(softplus.(x)), x)[2][1] ≈ grad(x -> sum(softplus.(x)), d_x)[2][1]
+    @test grad(x -> sum(softsign.(x)), x)[2][1] ≈ grad(x -> sum(softsign.(x)), d_x)[2][1]
     @test grad(x -> sum(relu.(x)), x)[2][1] ≈ grad(x -> sum(relu.(x)), d_x)[2][1]
     @test grad(x -> sum(leakyrelu.(x, 0.01)), x)[2][1] ≈ grad(x -> sum(leakyrelu.(x, 0.01)), d_x)[2][1]
+    # ELU on CUDA results in scalar operations warning followed by segfault, disabling it for now
+    # @test grad(x -> sum(elu.(x, 1.0)), x)[2][1] ≈ grad(x -> sum(elu.(x, 1.0)), d_x)[2][1]
 
     g = grad(x -> sum(softmax(x)), x)[2][1]
     d_g = grad(x -> sum(softmax(x)), d_x)[2][1]
