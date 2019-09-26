@@ -57,3 +57,6 @@ CuArrays.cufunc(::typeof(softplus)) = cusoftplus
 
 ∇cusoftplus(dy, x) = culogistic(x) * dy
 CuArrays.cufunc(::typeof(∇softplus)) = ∇cusoftplus
+
+∇cuelu(dy, x::Real, alpha) = ifelse(x >= 0, x/1, alpha * CUDAnative.exp(x))
+CuArrays.cufunc(::typeof(∇elu)) = ∇cuelu

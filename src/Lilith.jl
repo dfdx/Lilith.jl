@@ -9,8 +9,11 @@ export
     logistic,
     sigmoid,
     softplus,
+    softsign,
+    logsigmoid,
     relu,
     leakyrelu,
+    # elu,
     softmax,
     logsoftmax,
     # losses
