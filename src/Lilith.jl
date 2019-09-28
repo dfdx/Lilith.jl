@@ -30,6 +30,7 @@ export
     # optim
     update!,
     SGD,
+    Adam,
     # training
     fit!,
     # device API (reexport from Yota)

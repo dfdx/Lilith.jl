@@ -18,4 +18,10 @@ my_model_loss(m::MyModel, x::AbstractArray) = sum(m(x))
     @test old_m.linear.W != m.linear.W
     update!(SGD(0.1; momentum=0.5), x, g[2])
     @test old_x != x
+
+    # Adam
+    update!(Adam(), m, g[1])
+    @test old_m.linear.W != m.linear.W
+    update!(Adam(), x, g[2])
+    @test old_x != x
 end
