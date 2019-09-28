@@ -27,6 +27,9 @@ export
     Linear,
     Sequential,
     Conv2d,
+    # optim
+    update!,
+    SGD,
     # training
     fit!,
     # device API (reexport from Yota)

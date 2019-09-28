@@ -1,51 +1,54 @@
-## Code of all optimizers is heavily based on https://github.com/jacobcvt12/GradDescent.jl/
-## Main reasons for modifications:
-## 1. Better workflow on GPU
-## 2. Single code style, including variable naming
-## 3. Similarity to PyTorch API
+################################################################################
+#                                    SGD                                       #
+################################################################################
 
-"""
-**SGD constructor**
-```julia
-    SGD(; eta::Real=0.01, gamma::Real=0.9)
-```
-Algorithm :
-```math
-\\begin{align*}
-v_t =& \\gamma v_{t-1} + \\eta g_t\\\\
-\\Delta x_t =& v_t
-\\end{align*}
-```
-"""
 mutable struct SGD
-    opt_type::String
-    t::Int64
-    eta::Float64
-    gamma::Float64
-    v_t::AbstractArray
+    lr::Float32
+    momentum::Float32
+    v_t::Dict{Any, Any}   # path => previous velocity
 end
 
-## Note the algorithm seems flawed, \eta should be 1-\β and a supplementary global learning rate would be nice
-
-function SGD(; eta::Real=0.01, gamma::Real=0.9)
-    @assert eta > 0.0 "eta must be greater than 0"
-    @assert gamma > 0.0 "gamma must be greater than 0"
-
-    SGD("SGD", 0, eta, gamma, [])
+function SGD(lr; momentum=0)
+    @assert momentum >= 0.0 "momentum must be >= 0"
+    SGD(lr, momentum, Dict())
 end
 
-params(opt::SGD) = "eta=$(opt.eta), gamma=$(opt.gamma)"
+Base.show(io::IO, opt::SGD) = print(io, "SGD(lr=$(opt.lr), momentum=$(opt.momentum))")
 
-function update(opt::SGD, g_t::AbstractArray{T}) where {T<:Real}
-    # resize squares of gradients
-    if opt.t == 0
-        opt.v_t = zero(g_t)
+
+function make_update!(opt::SGD, path, x, gx)
+    v_t0 = get(opt.v_t, path, zero(gx))
+    v_t1 = opt.momentum .* v_t0 .+ opt.lr .* gx
+    opt.v_t[path] = v_t1
+    x_t0 = x
+    x_t1 = x_t0 .- v_t1
+    return x_t1
+end
+
+
+function Yota.update!(opt::SGD, m, gm)
+    # for (path, gx) in gm
+    #     v_t0 = get(opt.v_t, path, zero(gx))
+    #     v_t1 = opt.momentum .* v_t0 .+ opt.lr .* gx
+    #     opt.v_t[path] = v_t1
+    #     x_t0 = Yota.getfield_nested(m, path)
+    #     x_t1 = x_t0 .- v_t1
+    #     Yota.setfield_nested!(m, path, x_t1)
+    # end
+    for (path, gx) in gm
+        x_t0 = Yota.getfield_nested(m, path)
+        x_t1 = make_update!(opt, path, x_t0, gx)
+        Yota.setfield_nested!(m, path, x_t1)
     end
+end
 
-    # update timestep
-    opt.t += 1
 
-    opt.v_t = opt.gamma * opt.v_t + opt.eta * g_t
-
-    return opt.v_t
+function Yota.update!(opt::SGD, x::AbstractArray, gx)
+    # path = ()
+    # v_t0 = get(opt.v_t, path, zero(gx))
+    # v_t1 = opt.momentum .* v_t0 .+ opt.lr .* gx
+    # opt.v_t[path] = v_t1
+    # x_t0 = x
+    # x_t1 = x_t0 .- v_t1
+    x .= make_update!(opt, (), x, gx)
 end

@@ -9,6 +9,7 @@ include("gradcheck.jl")
 include("conv.jl")
 include("activations.jl")
 include("layers.jl")
+include("optim.jl")
 include("metrics.jl")
 
 if has_cuda()
