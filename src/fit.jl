@@ -2,7 +2,7 @@
 
 
 function partial_fit!(m, X::AbstractArray, Y::AbstractArray, loss_fn;
-                      lr=1e-3, batch_size=100, device=CPU())
+                      opt=SGD(1e-3), batch_size=100, device=CPU())
     epoch_loss = 0
     f = (m, x, y) -> loss_fn(m(x), y)
     for (i, (x, y)) in enumerate(eachbatch((X, Y), size=batch_size))
@@ -10,7 +10,7 @@ function partial_fit!(m, X::AbstractArray, Y::AbstractArray, loss_fn;
         y = to_device(device, copy(y))
         loss, g = grad(f, m, x, y)
         # loss, g = grad(f, m, x)
-        update!(m, g[1], (x, gx) -> x .- Float32(lr) * gx)
+        update!(opt, m, g[1])
         # epoch_loss += loss
         println("iter $i: loss=$loss")
     end
@@ -19,7 +19,7 @@ end
 
 
 function fit!(m, X::AbstractArray, Y::AbstractArray, loss_fn;
-              n_epochs=10, batch_size=100, lr=1e-3, device=CPU(), report_every=1)
+              n_epochs=10, batch_size=100, opt=SGD(1e-3), device=CPU(), report_every=1)
     for epoch in 1:n_epochs
         time = @elapsed epoch_loss = partial_fit!(m, X, Y, loss_fn, batch_size=batch_size, device=device)
         if epoch % report_every == 0

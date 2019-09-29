@@ -2,8 +2,6 @@
 
 using Lilith
 using MLDatasets
-import Yota: trace
-
 
 # include("../src/core.jl")
 # __init__()
@@ -43,5 +41,6 @@ function main()
     X = convert(Array{Float64}, reshape(X, 28, 28, 1, :));
     Y .+= 1   # replace class label like "0" with its position like "1"
     loss_fn = NLLLoss()
-    @time fit!(m, X, Y, loss_fn; n_epochs=10, lr=1e-2, batch_size=64, device=device)
+    opt = SGD(1e-2; momentum=0)    
+    @time fit!(m, X, Y, loss_fn; n_epochs=10, opt=opt, batch_size=100, device=device)
 end

@@ -54,3 +54,32 @@ end
     @test (grad((x, x_target) -> mseloss(x, x_target), x, x_target)[2][1] ≈
            grad((x, x_target) -> mseloss(x, x_target), d_x, d_x_target)[2][1])
 end
+
+
+@testset "cuda: optim" begin
+
+    # not every parameter update will lead to descreased loss
+    # but at least we can check that parameters are actually changed
+    m = MyModel(Linear(5, 4)) |> device; x = rand(5, 10) |> device;
+    old_m = deepcopy(m); old_x = deepcopy(x)
+    _, g = grad(my_model_loss, m, x)
+       
+    # SGD
+    update!(SGD(0.1; momentum=0.5), m, g[1])
+    @test old_m.linear.W != m.linear.W
+    update!(SGD(0.1; momentum=0.5), x, g[2])
+    @test old_x != x
+
+    # RMSprop
+    update!(RMSprop(), m, g[1])
+    @test old_m.linear.W != m.linear.W
+    update!(RMSprop(), x, g[2])
+    @test old_x != x
+
+    # Adam
+    update!(Adam(), m, g[1])
+    @test old_m.linear.W != m.linear.W
+    update!(Adam(), x, g[2])
+    @test old_x != x
+
+end
