@@ -1,3 +1,6 @@
+## Code for optimizers adapted from
+## https://github.com/jacobcvt12/GradDescent.jl/
+
 abstract type Optimizer end
 
 
@@ -47,6 +50,40 @@ end
 
 
 ################################################################################
+#                                RMSprop                                       #
+################################################################################
+
+
+mutable struct RMSprop <: Optimizer
+    t::Int32
+    eps::Float32
+    eta::Float32
+    gamma::Float32
+    E_g_sq_t::Dict{Any, Any}
+end
+
+function RMSprop(; eta::Real=0.001, gamma::Real=0.01, eps::Real=1e-8)
+    @assert eta > 0.0 "eta must be greater than 0"
+    @assert gamma > 0.0 "gamma must be greater than 0"
+    @assert eps > 0.0 "eps must be greater than 0"
+
+    RMSprop(0, eps, eta, gamma, Dict())
+end
+
+
+function make_update!(opt::RMSprop, path, x, gx)
+    # resize accumulated and squared updates
+    E_g_sq_t = get(opt.E_g_sq_t, path, zero(gx))
+    # accumulate gradient
+    E_g_sq_t = opt.gamma * E_g_sq_t + (1f0 - opt.gamma) * (gx .^ 2)
+    # compute update
+    RMS_g_t = sqrt.(E_g_sq_t .+ opt.eps)
+    opt.E_g_sq_t[path] = E_g_sq_t
+    return x - opt.eta .* gx ./ RMS_g_t
+end
+
+
+################################################################################
 #                                   Adam                                       #
 ################################################################################
 
@@ -67,28 +104,26 @@ function Adam(;lr::Real=0.001, beta1::Real=0.9, beta2::Real=0.999, eps::Real=10e
     @assert beta1 > 0.0 "beta1 must be greater than 0"
     @assert beta2 > 0.0 "beta2 must be greater than 0"
     @assert eps > 0.0 "eps must be greater than 0"
-    Adam(0, eps, lr, beta1, beta2, Dict(), Dict())
+    Adam(1, eps, lr, beta1, beta2, Dict(), Dict())
 end
 
 
 function make_update!(opt::Adam, path, x, gx)
     # resize biased moment estimates if first iteration
-    m_t = get(opt.m_t, path, zero(gx))   # TODO: check size of the minibatch
+    m_t = get(opt.m_t, path, zero(gx))
     v_t = get(opt.v_t, path, zero(gx))
     # update biased first moment estimate
     m_t = opt.beta1 * m_t + (1f0 - opt.beta1) * gx
-    opt.m_t[path] = m_t
     # update biased second raw moment estimate
     v_t = opt.beta2 * v_t + (1f0 - opt.beta2) * (gx .^ 2)
+    # save moments for the next iteration
+    opt.m_t[path] = m_t
     opt.v_t[path] = v_t
     # compute bias corrected first moment estimate
-    m̂_t = m_t / (1f0 - opt.beta1^opt.t)
+    m̂_t = m_t ./ (1f0 - opt.beta1^opt.t)
     # compute bias corrected second raw moment estimate
-    v̂_t = v_t / (1f0 - opt.beta2^opt.t)
+    v̂_t = v_t ./ (1f0 - opt.beta2^opt.t)
     # apply update
-    x_t1 = opt.lr * m̂_t ./ sqrt.(v̂_t .+ opt.eps)    
+    x_t1 = x - opt.lr * m̂_t ./ (sqrt.(v̂_t) .+ opt.eps)
     return x_t1
 end
-
-# TODO: add tests on CPU
-# TODO: add tests on GPU

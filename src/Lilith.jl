@@ -30,6 +30,7 @@ export
     # optim
     update!,
     SGD,
+    RMSprop,
     Adam,
     # training
     fit!,
