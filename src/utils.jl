@@ -1,21 +1,24 @@
-# Every package should have utils.jl! Even if it's empty!
 
-# TODO: move these functions to Yota
+function norm2_values(x)
+    if x isa Dict
+        vals = collect(values(x))
+        return vals
+    elseif x isa AbstractArray || x isa Tuple
+        return flatten(map(norm2_values, x))
+    elseif x isa Function
+        return []
+    elseif Yota.isstruct(x)
+        sub_iters = []
+        for fld in fieldnames(typeof(x))
+            push!(sub_iters, norm2_values(getfield(x, fld)))
+        end
+        return flatten(sub_iters)
+    else
+        return x
+    end
+end
 
-# function Yota.to_device(device::CPU, x)
-#     T = typeof(x)
-#     flds = fieldnames(T)
-#     if is_cuarray(x)
-#         return collect(x)
-#     elseif isempty(flds)
-#         # already primitive or array
-#         return x
-#     else
-#         # struct, recursively convert and construct type from fields
-#         fld_vals = [to_device(device, getfield(x, fld)) for fld in flds]
-#         return T(fld_vals...)
-#     end
-# end
 
-# (device::CPU)(x) = to_device(device, x)
-# (device::GPU)(x) = to_device(device, x)
+function norm2(x)
+    Statistics.norm(collect(norm2_values(x)), 2)
+end

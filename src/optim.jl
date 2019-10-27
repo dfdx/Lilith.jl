@@ -34,7 +34,7 @@ mutable struct SGD <: Optimizer
 end
 
 function SGD(lr; momentum=0)
-    @assert momentum >= 0.0 "momentum must be >= 0"
+    # @assert momentum >= 0.0 "momentum must be >= 0"
     SGD(0, lr, momentum, Dict())
 end
 
