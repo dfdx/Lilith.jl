@@ -1,16 +1,10 @@
-# using Lilith
-include("../../src/core.jl")
-__init__()
-
-import Yota: _grad
-
+using Lilith
+import Lilith.fit!
 using Distributions
 using MLDataUtils
 using MLDataUtils
 using MLDatasets
 using Plots
-
-gr()
 
 
 ################################################################################
@@ -159,7 +153,7 @@ function loss(flow::RealNVP, x)
 end
 
 
-function __fit!(flow::RealNVP, X::AbstractMatrix{T};
+function fit!(flow::RealNVP, X::AbstractMatrix{T};
                         n_epochs=50, batch_size=100, report_every=1, opt=SGD(1e-4)) where T
     for epoch in 1:n_epochs
         epoch_cost = 0
@@ -176,21 +170,12 @@ function __fit!(flow::RealNVP, X::AbstractMatrix{T};
 end
 
 
-function show_pic(x)
-    reshape(x, 28, 28)' |> imshow
-end
+## Example data
+
+gr()
 
 
-function show_recon(m, x)
-    x_ = reconstruct(m, x)
-    show_pic(x)
-    show_pic(x_)
-end
-
-
-
-
-function make_moons(;n_samples=100)
+function make_moons(;n_samples=1000)
     n_samples_out = div(n_samples, 2)
     n_samples_in = n_samples - n_samples_out
 
@@ -207,92 +192,11 @@ end
 
 
 function main()
-    X, y = make_moons()
-    # scatter(X[1, :], X[2, :], color=y)
-    x = first(eachbatch(X))
-
+    X, y = make_moons(n_samples=200)
     flow = RealNVP(2, 256)
-    # _, g = grad(loss, flow, x)
-    __fit!(flow, X, report_every=100, n_epochs=5000, opt=Adam(lr=1e-8))
+    fit!(flow, X, report_every=100, n_epochs=1000, opt=Adam(lr=1e-4))
+
+    Z, _ = fwd_map(flow, X)
+    scatter(X[1, :], X[2, :])
+    scatter!(Z[1, :], Z[2, :])
 end
-
-
-
-# check:
-# why Python version optimizes logp (sum of log_det_J) to -6 while Julia version to -12?
-# try another dataset with 0 <= X <= 1 and more elements
-
-using TensorBoardLogger
-using Logging
-
-lg = TBLogger("tb/logs", min_level=Logging.Info)
-global_logger(lg)
-
-
-
-function fit_test!(flow, x)
-    empty!(Yota.GRAD_CACHE)
-    # opt = Adam(;lr=1e-3)
-    opt = SGD(1e-4; momentum=0)
-    for i=1:4000
-        L, g = grad((flow, x) -> begin
-                    z = x
-                    z, log_det_J1 = fwd_map(flow.c1, z)
-                    z, log_det_J2 = fwd_map(flow.c2, z)
-                    z, log_det_J3 = fwd_map(flow.c3, z)
-                    z, log_det_J4 = fwd_map(flow.c4, z)
-                    z, log_det_J5 = fwd_map(flow.c5, z)
-                    z, log_det_J6 = fwd_map(flow.c6, z)
-                    -sum(logpdf(flow.prior, z))
-                    # z = flow.c1.s(z) .* flow.c1.mask
-                    # sum(abs2.(z))
-                    end, flow, x)
-        update!(opt, flow, g[1]; ignore=[(c, :mask) for c in [:c1, :c2, :c3, :c4, :c5, :c6]])
-        g_norm = norm2(g[1])
-        # p_norm = norm2(flow)
-        if i == 1 || i % 50 == 0
-            # @info "epoch = $i; loss = $L; g_norm = $g_norm"
-            @info "epoch statistics" epoch=i loss=L g_norm=g_norm
-            println("epoch statistics epoch=$i loss=$L g_norm=$g_norm")
-        end
-    end
-end
-
-
-
-
-
-function test_coupling()
-    opt = SGD(1e-4; momentum=0)
-    flow = RealNVP(2, 256)
-    # for c in (flow.c1, flow.c2, flow.c3, flow.c4, flow.c5, flow.c6)
-    #     fill!(c.s.seq[1].W, 0.01); fill!(c.s.seq[1].b, 0)
-    #     fill!(c.s.seq[3].W, 0.01); fill!(c.s.seq[3].b, 0)
-    #     fill!(c.s.seq[5].W, 0.01); fill!(c.s.seq[5].b, 0)
-    #     fill!(c.t.seq[1].W, 0.01); fill!(c.t.seq[1].b, 0)
-    #     fill!(c.t.seq[3].W, 0.01); fill!(c.t.seq[3].b, 0)
-    #     fill!(c.t.seq[5].W, 0.01); fill!(c.t.seq[5].b, 0)
-    # end
-    # x = ones(2, 10)
-    x = rand(2, 10)
-    # loss(flow, x)
-    for i=1:10_000
-        L, g = grad(loss, flow, x)
-        update!(opt, flow, g[1]; ignore=[(c, :mask) for c in [:c1, :c2, :c3, :c4, :c5, :c6]])
-        if i % 100 == 0
-            n = norm2(g[1][(:c1, :s, :seq, 1, :W)])
-            println("$i: norm2 = $n; L = $L")
-        end
-    end
-
-
-    g[1][(:c1, :s, :seq, 1, :W)][1:10, :]
-    g[1][(:c1, :t, :seq, 1, :W)][1:10, :]
-    
-    
-end
-
-# TODO: convert to Float32 and test again
-
-# Option 1: numeric instability on some step of optimization
-# Option 2: with syntetic data there will be no error => mistake in initialization

@@ -2,6 +2,9 @@ module Lilith
 
 export
     grad,
+    @diffrule,
+    @diffrile_kw,
+    @nodiff,
     # conv
     conv2d,
     maxpool2d,
@@ -40,7 +43,6 @@ export
     CPU,
     GPU
     # metrics (not exportrd by default)
-
 
 
 

@@ -1,6 +1,5 @@
 using Lilith
-import Lilith.norm2
-import Yota
+import Lilith.fit!
 using Distributions
 using GradDescent
 using MLDataUtils
@@ -33,7 +32,7 @@ end
 
 VAE(n_inp, n_he1, n_he2, n_z, n_hd1, n_hd2, n_out) =
     VAE(
-        # encoder  
+        # encoder
         Linear(n_inp, n_he1),
         Linear(n_he1, n_he2),
         Linear(n_he2, n_z),
@@ -75,7 +74,6 @@ end
 function fit!(m::VAE, X::AbstractMatrix{T};
               n_epochs=50, batch_size=100, opt=SGD(1e-4; momentum=0)) where T
     for epoch in 1:n_epochs
-        empty!(Yota.GRAD_CACHE)
         print("Epoch $epoch: ")
         epoch_cost = 0
         t = @elapsed for (i, x) in enumerate(eachbatch(X, size=batch_size))
@@ -83,8 +81,6 @@ function fit!(m::VAE, X::AbstractMatrix{T};
             cost, g = grad(vae_cost, m, eps, x)
             update!(opt, m, g[1])
             epoch_cost += cost
-            g_norm = norm2(g[1])
-            @info "epoch = $epoch; loss = $cost; g_norm = $g_norm)"
         end
         println("avg_cost=$(epoch_cost / (size(X,2) / batch_size)), elapsed=$t")
     end
