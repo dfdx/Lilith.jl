@@ -12,6 +12,7 @@ function Linear(in_features::Int, out_features::Int)
     d = Uniform(-k_sqrt, k_sqrt)
     return Linear(rand(d, out_features, in_features), rand(d, out_features))
 end
+Linear(in_out::Pair{Int, Int}) = Linear(in_out[1], in_out[2])
 
 function Base.show(io::IO, l::Linear)
     o, i = size(l.W)
@@ -25,9 +26,6 @@ end
 #                               Sequential                                     #
 ################################################################################
 
-
-# TODO: stub, we can't differentiate through it right now since Yota.field_paths doesn't track
-# indices of seq
 mutable struct Sequential
     seq::Tuple
 end

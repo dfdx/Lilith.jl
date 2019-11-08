@@ -196,7 +196,14 @@ function main()
     flow = RealNVP(2, 256)
     fit!(flow, X, report_every=100, n_epochs=1000, opt=Adam(lr=1e-4))
 
+    # map moon-disributed X to normally distributed Z
     Z, _ = fwd_map(flow, X)
     scatter(X[1, :], X[2, :])
     scatter!(Z[1, :], Z[2, :])
+
+    # map normally distributed Z to moon-distributed X
+    Z2 = rand(MvNormal(zeros(2), ones(2)), 200)
+    X2 = inv_map(flow, Z2)
+    scatter!(Z[1, :], Z[2, :])
+    scatter(X[1, :], X[2, :])
 end
