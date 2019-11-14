@@ -1,6 +1,11 @@
 ## recurrent networks
+## LSTM implementation is taken from:
+## https://github.com/FluxML/Flux.jl/blob/7104fd933200833d3d73e6dec2f9572e3436f4dc/src/layers/recurrent.jl
 
-## Vanilla RNN
+
+################################################################################
+#                                 Vanilla RNN                                  #
+################################################################################
 
 mutable struct RNNCell
   W_ih::AbstractMatrix
@@ -33,10 +38,18 @@ end
 mutable struct RNN
     cell::RNNCell
 end
+RNN(inp_size, hid_size) = RNN(RNNCell(inp_size, hid_size))
+RNN(inp_hid::Pair{Int}) = RNN(RNNCell(inp_hid[1], inp_hid[2]))
 
 
-# input should be of size (inp_size, batch, seq_len)
-# TODO: for multilayer, multidirectional nets h should be AbstractArray{T, 3} instead
+function init_hidden(m::RNN, batch_size::Integer)
+    hid_size = length(m.cell.b_hh)
+    return zeros(hid_size, batch_size)
+end
+
+
+# x_seq should be of size (inp_size, batch, seq_len)
+# h should be of size (hid_size, batch)
 function forward(m::RNN, x_seq::AbstractArray{T, 3}, h::AbstractArray{T, 2}) where T
     inp_size, batch, seq_len = size(x_seq)
     hid_size = length(m.cell.b_hh)
@@ -45,12 +58,156 @@ function forward(m::RNN, x_seq::AbstractArray{T, 3}, h::AbstractArray{T, 2}) whe
     cell = m.cell
     for i=1:size(x_seq, 3)
         x = x_seq[:, :, i]
-        h = forward(cell, x, h)        
+        h = forward(cell, x, h)
         h_all = cat(h_all, reshape(h, h_all_sz); dims=3)
     end
-    # TODO 2: make multilayer
-    # TODO 3: make biderectional
     return h_all, h
 end
 
 (m::RNN)(x::AbstractArray{T,3}, h::AbstractArray{T,2}) where T = forward(m, x, h)
+
+
+################################################################################
+#                                  LSTM                                        #
+################################################################################
+
+mutable struct LSTMCell
+  W_ih::AbstractMatrix
+  W_hh::AbstractMatrix
+  b_ih::AbstractVector
+  b_hh::AbstractVector
+end
+
+
+function LSTMCell(inp::Integer, hid::Integer)
+    k_sqrt = sqrt(1 / hid)
+    d = Uniform(-k_sqrt, k_sqrt)
+    return LSTMCell(rand(d, 4*hid, inp), rand(d, 4*hid, hid), rand(d, 4*hid), rand(4*hid))
+end
+LSTMCell(inp_hid::Pair{Int}) = LSTMCell(inp_hid[1], inp_hid[2])
+
+Base.show(io::IO, m::LSTMCell) = print(io, "LSTMCell($(size(m.W_ih, 2)) => $(size(m.W_ih, 1)))")
+
+
+
+slice(len, idx) = (1:len) .+ len*(idx-1)
+
+# x should be of size (inp_size, batch_size)
+# h and c should be of size (hid_size, batch_size)
+function forward(m::LSTMCell, x::AbstractMatrix, h::AbstractMatrix, c::AbstractMatrix)
+    hid_len = size(h, 1)
+    σ = tanh
+    # weight breakdown in PyTorch is described here:
+    # https://github.com/pytorch/pytorch/blob/0c48092b2270d56cdab327bd1ff0ca89f5b7d569/torch/nn/modules/rnn.py#L479-L487
+    # however, we don't split weights into W_ii, W_if, etc., but instead first calculate
+    # all linear transformations as `y` and only after that take slices of this variable
+    # to calculate i, f, g and o
+    y = m.W_ih*x .+ m.b_ih .+ m.W_hh*h .+ m.b_hh
+    i = σ.(y[slice(hid_len, 1), :])
+    f = σ.(y[slice(hid_len, 2), :])
+    g = tanh.(y[slice(hid_len, 3), :])
+    o = σ.(y[slice(hid_len, 4), :])
+    c_ = f .* c .+ i .* g
+    h_ = o .* tanh.(c_)
+    return h_, c_
+end
+
+(m::LSTMCell)(x::AbstractMatrix, h::AbstractMatrix, c::AbstractMatrix) = forward(m, x, h, c)
+
+
+mutable struct LSTM
+    cell::LSTMCell
+end
+LSTM(inp_size, hid_size) = LSTM(LSTMCell(inp_size, hid_size))
+LSTM(inp_hid::Pair{Int}) = LSTM(LSTMCell(inp_hid[1], inp_hid[2]))
+
+
+function init_hidden(m::LSTM, batch_size::Integer)
+    hid_size = length(m.cell.b_hh) ÷ 4
+    return zeros(hid_size, batch_size), zeros(hid_size, batch_size)
+end
+
+
+# x_seq should be of size (inp_size, batch, seq_len)
+# h and c should be of size (hid_size, batch)
+function forward(m::LSTM, x_seq::AbstractArray{T, 3}, h::AbstractArray{T, 2}, c::AbstractArray{T, 2}) where T
+    inp_size, batch, seq_len = size(x_seq)
+    hid_size = size(h, 1)
+    h_all = zeros(1 * hid_size, batch, 0)
+    h_all_sz = (size(h)..., 1)
+    cell = m.cell
+    for i=1:size(x_seq, 3)
+        x = x_seq[:, :, i]
+        h, c = forward(cell, x, h, c)
+        h_all = cat(h_all, reshape(h, h_all_sz); dims=3)
+    end
+    return h_all, h, c
+end
+
+(m::LSTM)(x::AbstractArray{T,3}, h::AbstractArray{T,2}, c::AbstractArray{T,2}) where T = forward(m, x, h, c)
+
+
+
+# TODO 1: LSTM
+# TODO 2: GRU
+# TODO 3: check that gradient over h and h_all leads to proper loss minimization (tutorial?)
+# TODO 4: add docs
+
+
+
+## SAVING THIS CODE FOR FUTURE
+## PyTorch provides multilayer, possibly biderectional RNN implementation.
+## There are many ways to do the same thing, but to align the code with PyTorch
+## I need to clearly understand their implementation, which is out of scope for me now.
+## Thus I'm just saving this in-progress piece of code for future and stick
+## with simple implementation for now.
+## It's worth to note that at least multiple layers can be achieved on user level
+## by stacking several RNNs
+
+## mutable struct RNN
+##     num_layers::Int
+##     num_directions::Int
+##     cells::RNNCell
+## end
+
+## RNN(inp::Integer, hid::Integer; num_layers::Int=1, biderectional::Bool=false) =
+##     RNN(num_layers, biderectional ? 2 : 1, RNNCell(inp, hid))
+## RNN(inp_hid::Pair{Int}; num_layers::Int=1, biderectional::Bool=false) =
+##     RNN(inp_hid[1], inp_hid[2]; num_layers=num_layers, biderectional=biderectional)
+
+## Base.show(io::IO, m::RNN) = print(io, "RNN($(m.cell)")
+
+## function init_hidden(m::RNN, batch_size::Integer)
+##     hid_size = length(m.cell.b_hh)
+##     return zeros(hid_size, batch_size, m.num_layers * m.num_directions)
+## end
+
+
+## # x_seq should be of size (inp_size, batch_size, seq_len)
+## # H should be of size (hid_size, batch_size, num_layers*num_directions)
+## function forward(m::RNN, x_seq::AbstractArray{T, 3}, H::AbstractArray{T, 3}) where T
+##     inp_size, batch_size, seq_len = size(x_seq)
+##     hid_size = length(m.cell.b_hh)
+##     # h_all = zeros(hid_size, batch_size, m.num_layers * m.num_directions)
+##     # h_all_sz = (size(h)..., 1)
+##     cell = m.cell
+##     for l=1:m.num_layers
+##         h = H[:, :, 2l - 1]           # l-th layer, forward direction
+##         for i=1:size(x_seq, 3)
+##             x = x_seq[:, :, i]
+##             h = forward(cell, x, h)
+##             # h_all = cat(h_all, reshape(h, h_all_sz); dims=3)
+##         end
+##         h = H[:, :, 2l]  # l-th layer, reverse direction
+##         for i=size(x_seq, 3):1
+##             x = x_seq[:, :, i]
+##             h = forward(cell, x, h)
+##             # h_all = cat(h_all, reshape(h, h_all_sz); dims=3)
+##         end
+##         # TODO: add another direction
+##     end
+##     # return h_all, h
+##     return h
+## end
+
+## (m::RNN)(x::AbstractArray{T,3}, h::AbstractArray{T,2}) where T = forward(m, x, h)
