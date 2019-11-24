@@ -18,6 +18,49 @@ end
 end
 
 
+@testset "cuda: RNN" begin
+    # vanilla RNN
+    m = RNN(10 => 5); x_seq = ones(10, 4, 10); h = init_hidden(m, 4)
+    _, g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
+    d_m, d_x_seq, d_h = map(device, (m, x_seq, h))
+    _, d_g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, d_m, d_x_seq, d_h)
+    @test g[1][(:cell, :W_ih)] ≈ d_g[1][(:cell, :W_ih)]
+
+    # LSTM
+    m = LSTM(10 => 5); x_seq = ones(10, 4, 10); h, c = init_hidden(m, 4)
+    _, g = grad((m, x_seq, h, c) -> begin h_all, h, c = m(x_seq, h, c); sum(h) end, m, x_seq, h, c)
+    d_m, d_x_seq, d_h, d_c = map(device, (m, x_seq, h, c))
+    _, d_g = grad((m, x_seq, h, c) -> begin h_all, h, c = m(x_seq, h, c); sum(h) end, d_m, d_x_seq, d_h, d_c)
+    @test g[1][(:cell, :W_ih)] ≈ d_g[1][(:cell, :W_ih)]
+
+    # GRU
+    m = GRU(10 => 5); x_seq = ones(10, 4, 10); h = init_hidden(m, 4)
+    _, g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
+    d_m, d_x_seq, d_h = map(device, (m, x_seq, h))
+    _, d_g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, d_m, d_x_seq, d_h)
+    @test g[1][(:cell, :W_ih)] ≈ d_g[1][(:cell, :W_ih)]
+    
+    
+    # m = RNN(10 => 5) |> device; x_seq = ones(10, 4, 20) |> device; h = init_hidden(m, 4) |> device
+    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h) end, m, x_seq, h)
+    # m = RNN(10 => 5) |> device; x_seq = ones(10, 4, 20) |> device; h = init_hidden(m, 4) |> device
+    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
+
+    # # LSTM
+    # m = LSTM(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h, c = map(device, init_hidden(m, 4))
+    # @test check_convergence((m, x_seq, h, c) ->
+    #                         begin h_all, h, c = m(x_seq, h, c); sum(h) end, m, x_seq, h, c)
+    # m = LSTM(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h, c = map(device, init_hidden(m, 4))
+    # @test check_convergence((m, x_seq, h, c) ->
+    #                         begin h_all, h, c = m(x_seq, h, c); sum(h_all) end, m, x_seq, h, c)
+    # # GRU
+    # m = GRU(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h = init_hidden(m, 4) |> device
+    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h) end, m, x_seq, h)
+    # m = GRU(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h = init_hidden(m, 4) |> device
+    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
+end
+
+
 @testset "cuda: activations" begin
     x = rand(5, 5);
     # x = [0.1 0.2 0.3; 0.4 0.5 0.6; 0.7 0.8 0.9]

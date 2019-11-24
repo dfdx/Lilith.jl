@@ -22,7 +22,7 @@ function ∇conv2d_w(dy::CuArray{T,4}, x::CuArray{T,4}, w::CuArray{T,4}; stride=
     return CuArrays.∇conv_filter!(dw, x, dy, cdims)
 end
 
-function ∇conv2d_x(dy, x, w; stride=1, padding=0, dilation=1)
+function ∇conv2d_x(dy::CuArray{T,4}, x::CuArray{T,4}, w::CuArray{T,4}; stride=1, padding=0, dilation=1) where T
     cdims = DenseConvDims(x, w; stride=stride, padding=padding, dilation=dilation)
     dx = similar(x)
     return CuArrays.∇conv_data!(dx, dy, w, cdims)

@@ -2,6 +2,9 @@ module Lilith
 
 export
     grad,
+    @diffrule,
+    @diffrile_kw,
+    @nodiff,
     # conv
     conv2d,
     maxpool2d,
@@ -26,7 +29,13 @@ export
     # general layers
     Linear,
     Sequential,
+    # conv layers    
     Conv2d,
+    # RNN layers
+    RNN,
+    LSTM,
+    GRU,
+    init_hidden,
     # optim
     update!,
     SGD,
@@ -40,7 +49,6 @@ export
     CPU,
     GPU
     # metrics (not exportrd by default)
-
 
 
 

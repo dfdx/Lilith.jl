@@ -1,4 +1,6 @@
 using Yota
+using Base.Iterators
+using Statistics
 using Distributions
 using MLDataUtils
 import NNlib
@@ -7,6 +9,7 @@ using CUDAapi
 
 include("utils.jl")
 include("conv.jl")
+include("rnn.jl")
 include("activations.jl")
 include("losses.jl")
 include("layers.jl")

@@ -4,17 +4,19 @@
 abstract type Optimizer end
 
 
-function Yota.update!(opt::Optimizer, m, gm)
+function Yota.update!(opt::Optimizer, m, gm; ignore=Set())
     for (path, gx) in gm
-        x_t0 = Yota.getfield_nested(m, path)
-        x_t1 = make_update!(opt, path, x_t0, gx)
-        Yota.setfield_nested!(m, path, x_t1)
+        if !in(path, ignore)
+            x_t0 = Yota.getfield_nested(m, path)
+            x_t1 = make_update!(opt, path, x_t0, gx)
+            Yota.setfield_nested!(m, path, x_t1)
+        end
     end
     opt.t += 1
 end
 
 
-function Yota.update!(opt::Optimizer, x::AbstractArray, gx)
+function Yota.update!(opt::Optimizer, x::AbstractArray, gx; ignore=Set())
     x .= make_update!(opt, (), x, gx)
     opt.t += 1
 end
@@ -32,7 +34,7 @@ mutable struct SGD <: Optimizer
 end
 
 function SGD(lr; momentum=0)
-    @assert momentum >= 0.0 "momentum must be >= 0"
+    # @assert momentum >= 0.0 "momentum must be >= 0"
     SGD(0, lr, momentum, Dict())
 end
 
