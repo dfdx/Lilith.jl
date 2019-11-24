@@ -16,3 +16,22 @@ end
 gradcheck(f, xs...) =
   all(isapprox.(ngradient(f, xs...),
                 collect(grad(f, xs...)[2]), rtol = 1e-5, atol = 1e-5))
+
+
+function check_convergence(f, args...; p=1, verbose=false, lr=1e-4, epochs=100)
+    opt = Adam(lr=1e-4)
+    # run once to overcome possible initialization issues
+    # _, g = grad(f, args...)
+    # update!(opt, args[p], g[p])
+    # calculate loss at the beginning
+    L0 = f(args...)
+    L = L0
+    for i=1:epochs
+        L, g = grad(f, args...)
+        if verbose
+            println(L)
+        end
+        update!(opt, args[p], g[p])
+    end
+    return L < L0
+end

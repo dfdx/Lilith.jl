@@ -29,7 +29,13 @@ export
     # general layers
     Linear,
     Sequential,
+    # conv layers    
     Conv2d,
+    # RNN layers
+    RNN,
+    LSTM,
+    GRU,
+    init_hidden,
     # optim
     update!,
     SGD,
