@@ -18,7 +18,7 @@ Negative log-likelihood. ŷ should be a vector of normalized log probabilities.
 """
 function nllloss(ŷ::AbstractMatrix, c::AbstractVector{<:Real})
     loss = 0
-    for j=1:size(ŷ, 2)
+    for j=1:size(ŷ, 2)        
         i = Int(c[j])
         loss += -ŷ[i, j]
     end

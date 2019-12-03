@@ -33,14 +33,32 @@ function (m::Net)(x::AbstractArray)
 end
 
 
+function get_mnist_data(train::Bool; device=CPU())
+    X, Y = train ? MNIST.traindata() : MNIST.testdata()
+    X = convert(Array{Float64}, reshape(X, 28, 28, 1, :)) |> device
+    # replace class label like "0" with its position like "1"
+    Y = Y .+ 1 |> device
+    return X, Y
+end
+
+
 function main()
+    # choose device: if CUDA is available on the system, GPU() will be used, otherwise - CPU()
     device = best_available_device()
-    m = Net()
-    m = to_device(device, m)
-    X, Y = MNIST.traindata();
-    X = convert(Array{Float64}, reshape(X, 28, 28, 1, :));
-    Y .+= 1   # replace class label like "0" with its position like "1"
+    # instantiate the model
+    m = Net() |> device
+    # load training data
+    X_trn, Y_trn = get_mnist_data(true);
+    # set loss function and optimizer, then fit the model
     loss_fn = NLLLoss()
-    opt = SGD(1e-2; momentum=0)    
-    @time fit!(m, X, Y, loss_fn; n_epochs=10, opt=opt, batch_size=100, device=device)
+    opt = SGD(1e-2; momentum=0)
+    @time fit!(m, X_trn, Y_trn, loss_fn; n_epochs=10, opt=opt, batch_size=100, device=device)
+
+    # load test data
+    X_tst, Y_tst = get_mnist_data(false)
+    # convert to device
+    X_tst = X_tst |> device; Y_tst = Y_tst |> device
+    # predict log probabilities and calculate accuracy
+    Ŷ = m(X_tst)
+    @info accuracy(Y_tst, Ŷ)
 end

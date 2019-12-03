@@ -2,7 +2,6 @@ using Lilith
 import Lilith.fit!
 using Distributions
 using MLDataUtils
-using MLDataUtils
 using MLDatasets
 using Plots
 

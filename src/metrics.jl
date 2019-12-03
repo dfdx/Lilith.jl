@@ -1,6 +1,11 @@
-function accuracy(y::AbstractVector{T}, ŷ::AbstractVector{T}) where T
+function accuracy(y::AbstractVector{T}, ŷ::AbstractVector{S}) where {T,S}
     @assert length(y) == length(ŷ)
     return sum(y .== ŷ) / length(y)
+end
+
+function accuracy(y::AbstractVector{T}, ŷ::AbstractMatrix{S}) where {T,S}
+    max_idxs = dropdims(mapslices(x -> findmax(x)[2], ŷ; dims=1), dims=1)
+    return accuracy(y, max_idxs)
 end
 
 
