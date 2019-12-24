@@ -60,3 +60,18 @@ CuArrays.cufunc(::typeof(∇softplus)) = ∇cusoftplus
 
 ∇cuelu(dy, x::Real, alpha) = ifelse(x >= 0, x/1, alpha * CUDAnative.exp(x))
 CuArrays.cufunc(::typeof(∇elu)) = ∇cuelu
+
+
+## batchnorm
+
+function batchnorm_impl(gamma::CuArray, beta::CuArray, x::CuArray,
+                        mu::CuArray, sigma2::CuArray, momentum::Real; eps, training)    
+    CuArrays.CUDNN.batchnorm(gamma, beta, x, mu, sigma2, momentum; eps=eps, training=training)
+end
+
+function ∇batchnorm_impl(gamma::CuArray, beta::CuArray, x::CuArray, dy::CuArray,
+                         mu::CuArray, sigma2::CuArray, momentum; eps, training)
+    CuArrays.CUDNN.∇batchnorm(gamma, beta, x, dy, mu, sigma2, momentum; eps=eps, training=training)
+end
+                    
+

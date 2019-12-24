@@ -13,6 +13,7 @@ include("rnn.jl")
 include("activations.jl")
 include("losses.jl")
 include("layers.jl")
+include("batchnorm.jl")
 include("optim.jl")
 include("device.jl")
 include("fit.jl")
@@ -31,6 +32,7 @@ end
 
 function __init__()
     register_conv_derivs()
+    register_batchnorm_derivs()
     register_activation_derivs()
     register_loss_derivs()
 end
