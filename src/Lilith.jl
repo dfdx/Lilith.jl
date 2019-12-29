@@ -29,8 +29,10 @@ export
     # general layers
     Linear,
     Sequential,
-    # conv layers    
+    # conv layers
     Conv2d,
+    # batchnorm
+    BatchNorm2d,
     # RNN layers
     RNN,
     LSTM,

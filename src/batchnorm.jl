@@ -33,34 +33,6 @@ function batchnorm_impl(gamma::AbstractArray, beta::AbstractArray, x::AbstractAr
 end
 
 
-# function ∇batchnorm_impl(gamma::AbstractArray, beta::AbstractArray, x::AbstractArray, dy::AbstractArray,
-#                          mu::AbstractArray, sigma2::AbstractArray, momentum; eps, training)
-#     x_centered = x .- mu
-#     sigma2_stable = sigma2 .+ eps
-#     sq_sigma2 = sqrt.(sigma2_stable)
-#     x_hat = x_centered ./ sq_sigma2
-#     y = gamma .* x_hat .+ beta
-
-#     dbeta = Yota.unbroadcast(beta, dy)
-#     dgamma = Yota.unbroadcast_prod_x(gamma, x_hat, dy)
-#     dx_hat = Yota.unbroadcast_prod_y(gamma, x_hat, dy)
-#     var27 = dx_hat ./ sq_sigma2
-#     var31 = -x_centered .* dx_hat
-#     var33 = sq_sigma2 .* sq_sigma2
-#     var35 = var31 ./ var33
-#     var37 = ones(size(sigma2_stable))
-#     var40 = var37 ./ 2
-#     var44 = -var37
-#     var47 = var44 ./ 2
-#     var49 = sigma2_stable .^ var47
-#     var51 = var40 .* var49 .* var35
-#     var52 = Yota.unbroadcast(sigma2, var51)
-#     var54 = -var27
-#     return dgamma, dbeta, dx
-# end
-
-
-
 function ∇batchnorm_impl(gamma::AbstractArray, beta::AbstractArray, x::AbstractArray, dy::AbstractArray,
                          mu::AbstractArray, sigma2::AbstractArray, momentum; eps, training)
     # based on:
@@ -92,20 +64,14 @@ function ∇batchnorm_impl(gamma::AbstractArray, beta::AbstractArray, x::Abstrac
     return dgamma, dbeta, dx
 end
 
-# batch_mean(x, dims) = dropdims(mean(x, dims=dims), dims=dims)
-# batch_var(x, dims) = dropdims(var(x, dims=dims), dims=dims)
+
 batch_mean(x, dims) = mean(x, dims=dims)
-batch_var(x, dims) = var(x, dims=dims)
-
-
-# TODO:
-# 1. optimize batch_var() for CuArrays
-# x. implement running stats
-# x. implement batchnorm() and ∇batchnorm() for CPU; test they are the same
-# x. implement testmode!() and trainmode!()
-# 5. write tests
-# tests:
-# * cpu vs. gpu (since we already believe gpu version)
+function batch_var(x, dims)
+    # note that this is equivalent to Statistics.var(x; dims=dims, corrected=false)
+    # but also works for CuArrays
+    mu = mean(x, dims=dims)
+    return mean((x .- mu) .^ 2; dims=dims)
+end
 
 
 # BatchNorm layer is somewhat tricky: on one hand, we want to track running mean and var during

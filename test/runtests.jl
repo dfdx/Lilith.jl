@@ -1,6 +1,7 @@
 using Lilith
 import Lilith: accuracy, recall, precision, confusion_matrix
 import Lilith: RNNCell, LSTMCell, GRUCell, rnn_forward, lstm_forward, gru_forward
+import Lilith: ∇batchnorm2d
 using Random
 using Test
 import CUDAapi.has_cuda

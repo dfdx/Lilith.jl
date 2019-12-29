@@ -18,6 +18,35 @@ end
 end
 
 
+@testset "cuda: batchnorm" begin
+    m = BatchNorm2d(3)
+    x = rand(10, 10, 3, 5)
+    d_m = device(m)
+    d_x = device(x)
+
+    y = m(x)
+    d_y = d_m(d_x)
+    @test isapprox(cpu(d_y), y; rtol=1e-2)
+
+    dy = randn(size(x)...)
+    d_dy = device(dy)
+
+    dgamma, dbeta, dx = ∇batchnorm2d(dy, m, m.gamma, m.beta, x)
+    d_dgamma, d_dbeta, d_dx = ∇batchnorm2d(d_dy, d_m, d_m.gamma, d_m.beta, d_x)
+    @test isapprox(cpu(d_dgamma), dgamma; rtol=1e-2)
+    @test isapprox(cpu(d_dbeta), dbeta; rtol=1e-2)
+    @test isapprox(cpu(d_dx), dx; rtol=1e-2)
+
+    _, g = grad((m, x) -> sum(m(x)), m, x)
+    _, d_g = grad((m, x) -> sum(m(x)), d_m, d_x)
+
+    @test isapprox(g[1][(:gamma,)], cpu(d_g[1][(:gamma,)]); rtol=1e-2, atol=1e-4)
+    @test isapprox(g[1][(:beta,)], cpu(d_g[1][(:beta,)]); rtol=1e-2, atol=1e-4)
+    @test isapprox(g[2], cpu(d_g[2]); rtol=1e-2, atol=1e-4)
+
+end
+
+
 @testset "cuda: RNN" begin
     # vanilla RNN
     m = RNN(10 => 5); x_seq = ones(10, 4, 10); h = init_hidden(m, 4)
@@ -39,25 +68,7 @@ end
     d_m, d_x_seq, d_h = map(device, (m, x_seq, h))
     _, d_g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, d_m, d_x_seq, d_h)
     @test g[1][(:cell, :W_ih)] ≈ d_g[1][(:cell, :W_ih)]
-    
-    
-    # m = RNN(10 => 5) |> device; x_seq = ones(10, 4, 20) |> device; h = init_hidden(m, 4) |> device
-    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h) end, m, x_seq, h)
-    # m = RNN(10 => 5) |> device; x_seq = ones(10, 4, 20) |> device; h = init_hidden(m, 4) |> device
-    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
 
-    # # LSTM
-    # m = LSTM(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h, c = map(device, init_hidden(m, 4))
-    # @test check_convergence((m, x_seq, h, c) ->
-    #                         begin h_all, h, c = m(x_seq, h, c); sum(h) end, m, x_seq, h, c)
-    # m = LSTM(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h, c = map(device, init_hidden(m, 4))
-    # @test check_convergence((m, x_seq, h, c) ->
-    #                         begin h_all, h, c = m(x_seq, h, c); sum(h_all) end, m, x_seq, h, c)
-    # # GRU
-    # m = GRU(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h = init_hidden(m, 4) |> device
-    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h) end, m, x_seq, h)
-    # m = GRU(10 => 5) |> device; x_seq = ones(10, 4, 2) |> device; h = init_hidden(m, 4) |> device
-    # @test check_convergence((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
 end
 
 
@@ -77,16 +88,16 @@ end
     g = grad(x -> sum(softmax(x)), x)[2][1]
     d_g = grad(x -> sum(softmax(x)), d_x)[2][1]
     @test isapprox(g, cpu(d_g), rtol = 1e-5, atol = 1e-5)
-        
+
     @test grad(x -> sum(logsoftmax(x)), x)[2][1] ≈ grad(x -> sum(logsoftmax(x)), d_x)[2][1]
 end
 
 
-@testset "cuda: losses" begin    
+@testset "cuda: losses" begin
     x = rand(5, 4); x = log.(x ./ sum(x; dims=1)); c = [3, 2, 1, 4, 5]
     d_x = device(x); d_c = device(c)
     @test grad((x, c) -> nllloss(x, c), x, c)[2][1] ≈ grad((x, c) -> nllloss(x, c), d_x, d_c)[2][1]
-   
+
     x = rand(5, 4); c = [3, 2, 1, 4, 5]
     d_x = device(x); d_c = device(c)
     @test (grad((x, c) -> crossentropyloss(x, c), x, c)[2][1] ≈
@@ -106,7 +117,7 @@ end
     m = MyModel(Linear(5, 4)) |> device; x = rand(5, 10) |> device;
     old_m = deepcopy(m); old_x = deepcopy(x)
     _, g = grad(my_model_loss, m, x)
-       
+
     # SGD
     update!(SGD(0.1; momentum=0.5), m, g[1])
     @test old_m.linear.W != m.linear.W
