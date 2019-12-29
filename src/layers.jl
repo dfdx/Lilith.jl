@@ -108,3 +108,18 @@ Base.show(io::IO, loss::MSELoss) = print(io, "MSELoss()")
 
 
 (loss::MSELoss)(x::AbstractMatrix, x_target::AbstractMatrix) = mseloss(x, x_target)
+
+
+################################################################################
+#                                 Common                                       #
+################################################################################
+
+
+function trainmode!(m, train::Bool=true)
+    # by default, recursively call trainmode!() on all fields
+    T = typeof(m)
+    for fld in fieldnames(T)
+        trainmode!(getfield(m, fld), train)
+    end
+end
+testmode!(m) = trainmode!(m, false)

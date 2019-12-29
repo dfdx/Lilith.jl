@@ -240,7 +240,7 @@ end
 
 
 ## SAVING THIS CODE FOR FUTURE
-## PyTorch provides multilayer, possibly biderectional RNN implementation.
+## PyTorch provides optionally multilayer and biderectional RNN implementation.
 ## There are many ways to do the same thing, but to align the code with PyTorch
 ## I need to clearly understand their implementation, which is out of scope for me now.
 ## Thus I'm just saving this in-progress piece of code for future and stick

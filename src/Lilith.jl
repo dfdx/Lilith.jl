@@ -29,8 +29,10 @@ export
     # general layers
     Linear,
     Sequential,
-    # conv layers    
+    # conv layers
     Conv2d,
+    # batchnorm
+    BatchNorm2d,
     # RNN layers
     RNN,
     LSTM,
@@ -43,12 +45,14 @@ export
     Adam,
     # training
     fit!,
+    trainmode!,
+    testmode!,
     # device API (reexport from Yota)
     best_available_device,
     to_device,
     CPU,
     GPU
-    # metrics (not exportrd by default)
+    # metrics (not exported by default)
 
 
 
