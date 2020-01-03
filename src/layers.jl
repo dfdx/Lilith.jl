@@ -55,18 +55,21 @@ end
 
 mutable struct Conv2d
     W::AbstractArray{T,4} where T
+    b::Union{AbstractVector{T} where T, Nothing}
     stride
     padding
     dilation
 end
 
 function Conv2d(in_channels::Int, out_channels::Int, kernel_size::Union{Int, NTuple{2, Int}};
-                stride=1, padding=0, dilation=1)
+                stride=1, padding=0, dilation=1, bias=true)
     kernel_tuple = kernel_size isa Tuple ? kernel_size : (kernel_size, kernel_size)
     # init weights same as in https://pytorch.org/docs/stable/nn.html#conv2d
     k_sqrt = sqrt(1 / (in_channels * prod(kernel_tuple)))
-    W = rand(Uniform(-k_sqrt, k_sqrt), kernel_tuple..., in_channels, out_channels)
-    return Conv2d(W, stride, padding, dilation)
+    d = Uniform(-k_sqrt, k_sqrt)
+    W = rand(d, kernel_tuple..., in_channels, out_channels)
+    b = bias ? rand(d, out_channels) : nothing
+    return Conv2d(W, b, stride, padding, dilation)
 end
 
 function Base.show(io::IO, c::Conv2d)
@@ -74,8 +77,13 @@ function Base.show(io::IO, c::Conv2d)
     print(io, "Conv2d($(k1)x$(k2), $i=>$o)")
 end
 
-(c::Conv2d)(x::AbstractArray{T,4}) where T =
-    conv2d(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
+function (c::Conv2d)(x::AbstractArray{T,4}) where T    
+    y = conv2d(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
+    if c.b != nothing
+        y = y .+ c.b
+    end
+    return y
+end
 
 
 
