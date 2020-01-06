@@ -21,7 +21,7 @@ BatchNorm2d(num_features::Int; eps=1e-5, momentum=0.1, training=true) =
         0
     )
 
-Base.show(io::IO, m::BatchNorm2d) = print(io, "BatchNorm($(length(m.beta)))")
+Base.show(io::IO, m::BatchNorm2d) = print(io, "BatchNorm2d($(length(m.beta)))")
 
 trainmode!(m::BatchNorm2d, train::Bool=true) = (m.training = train; nothing)
 
