@@ -8,6 +8,7 @@ using CUDAapi
 
 
 include("utils.jl")
+include("init.jl")
 include("conv.jl")
 include("rnn.jl")
 include("activations.jl")

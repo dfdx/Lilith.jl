@@ -59,7 +59,7 @@ end
 ################################################################################
 
 crossentropyloss(x::AbstractMatrix, c::Union{AbstractMatrix{<:Real}, AbstractVector{<:Real}}) =
-    nllloss(softmax(x), c)
+    nllloss(logsoftmax(x), c)
 
 
 ################################################################################

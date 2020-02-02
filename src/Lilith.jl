@@ -5,6 +5,9 @@ export
     @diffrule,
     @diffrile_kw,
     @nodiff,
+    # initialization
+    init_constant!,
+    init_kaiming_normal!,
     # conv
     conv2d,
     maxpool2d,
