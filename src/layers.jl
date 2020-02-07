@@ -80,7 +80,7 @@ end
 function (c::Conv2d)(x::AbstractArray{T,4}) where T    
     y = conv2d(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
     if c.b != nothing
-        y = y .+ c.b
+        y = y .+ reshape(c.b, (1, 1, length(c.b), 1))
     end
     return y
 end
