@@ -1,10 +1,45 @@
+function getbatch(a::AbstractArray{T,N}, i::Int, sz::Int; batch_dim=ndims(a)) where {T,N}
+    start = (i-1)*sz + 1
+    finish = min(i*sz, size(a, batch_dim))
+    start > finish && return nothing
+    selector = [d == batch_dim ? (start:finish) : (:) for d=1:ndims(a)]
+    return @view a[selector...]
+end
+
+
+function getbatch(t::Tuple, i::Int, sz::Int)
+    return ((getbatch(a, i, sz) for a in t)...,)
+end
+
+
+mutable struct BatchIter
+    data
+    sz::Int
+end
+
+Base.show(io::IO, it::BatchIter) = print(io, "BatchIter($(typeof(it.data)), sz=$(it.sz))")
+batchiter(data; sz::Int=1) = BatchIter(data, sz)
+
+
+function Base.iterate(it::BatchIter, i::Int=1)
+    r = getbatch(it.data, i, it.sz)
+    if r == nothing || (r isa Tuple && all(x -> x == nothing, r))
+        return nothing
+    else
+        return r, i+1
+    end
+end
+
+
+# TODO: implement `getbatch(data::ImageFolder, i, sz)` with threads
+
 
 ## Supervised learning with input X and output Y
 
 # function partial_fit!(m, X::AbstractArray, Y::AbstractArray, full_loss_fn;
 #                       opt=SGD(1e-3), batch_size=100, device=CPU())
 #     epoch_loss = 0
-#     for (i, (x, y)) in enumerate(eachbatch((X, Y), size=batch_size))
+#     for (i, (x, y)) in enumerate(batchiter((X, Y), size=batch_size))
 #         x = to_device(device, copy(x))
 #         y = to_device(device, copy(y))
 #         loss, g = grad(full_loss_fn, m, x, y)
@@ -33,7 +68,7 @@ function fit!(m, X::AbstractArray, Y::AbstractArray, loss_fn;
     num_batches = size(X)[end] // batch_size
     for epoch in 1:n_epochs
         epoch_loss = 0
-        for (i, (x, y)) in enumerate(eachbatch((X, Y), size=batch_size))
+        for (i, (x, y)) in enumerate(batchiter((X, Y), sz=batch_size))
             x = to_device(device, copy(x))
             y = to_device(device, copy(y))
             loss, g = grad(f, m, x, y)
@@ -54,7 +89,7 @@ function partial_fit!(m, X::AbstractArray, loss_fn;
                       opt=SGD(1e-3), batch_size=100, device=CPU())
     epoch_loss = 0
     f = (m, x) -> loss_fn(m(x))
-    for (i, x) in enumerate(eachbatch(X, size=batch_size))
+    for (i, x) in enumerate(batchiter(X, sz=batch_size))
         x = to_device(device, copy(x))
         loss, g = grad(f, m, x)
         update!(opt, m, g[1])

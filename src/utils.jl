@@ -22,3 +22,18 @@ end
 function norm2(x)
     Statistics.norm(collect(norm2_values(x)), 2)
 end
+
+
+"""
+Walk fields of struct `s` applying callback function `cb`.
+If `cb` returns nothing, recursively call `walkstruct()` on each field.
+"""
+function walkstruct(cb::Function, s)
+    rec = cb(s)
+    if rec == nothing
+        for p_name in propertynames(s)
+            prop = getproperty(s, p_name)
+            walkstruct(cb, prop)
+        end
+    end
+end
