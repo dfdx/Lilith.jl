@@ -1,6 +1,7 @@
 # Translated from PyTorch version, see cnn_minst.py
 
 using Lilith
+import Lilith: accuracy
 using MLDatasets
 
 # include("../src/core.jl")

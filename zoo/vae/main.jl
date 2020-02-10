@@ -1,10 +1,10 @@
 using Lilith
 import Lilith.fit!
 using Distributions
-using GradDescent
+# using GradDescent
 using MLDataUtils
 using MLDatasets
-using StatsBase
+# using StatsBase
 using ImageView
 
 

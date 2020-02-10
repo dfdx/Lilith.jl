@@ -12,6 +12,7 @@ include("conv.jl")
 include("rnn.jl")
 include("activations.jl")
 include("layers.jl")
+# include("losses.jl")  -- ignored since nllloss() doesn't provide derivative w.r.t. 2nd argument
 include("optim.jl")
 include("metrics.jl")
 
