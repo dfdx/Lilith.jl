@@ -64,7 +64,7 @@ Code available [here](https://github.com/dfdx/Lilith.jl/tree/master/benchmarks/c
 | Flux (GPU)    |     12 s         |        150 s         |    5 ms    |
 | PyTorch (GPU) |     12 s         |        120 s         |    2 ms    |
 
- * - total time includes 10 epochs + compilation time
+`*` - total time includes 10 epochs + compilation time
 
 Note that in the test on GPU Lilith has longest compilation time and thus
 longest total training time _after 10 epochs_. However, time per epoch
@@ -85,4 +85,4 @@ Code available [here](https://github.com/dfdx/Lilith.jl/tree/master/benchmarks/v
 | Flux (GPU)**  |     ---          |          ---         |     ---    |
 | PyTorch (GPU) |      7 s         |         66 s         |   501 µs   |
 
- ** - VAE example from the Flux zoo doesn't work on GPU
+`**` - VAE example from the Flux zoo doesn't work on GPU
