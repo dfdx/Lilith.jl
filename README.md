@@ -58,12 +58,18 @@ Code available [here](https://github.com/dfdx/Lilith.jl/tree/master/benchmarks/c
 |               | training 1 epoch | training total time* | prediction |
 | ------------- | ---------------- | -------------------- | ---------- |
 | Lilith (CPU)  |    170 s         |       1742 s         |   39 ms    |
-| Lilith (GPU)  |     10 s         |        164 s         |    5 ms    |
 | Flux (CPU)    |    250 s         |       2515 s         |   42 ms    |
+| ------------- | ---------------- | -------------------- | ---------- |
+| Lilith (GPU)  |     10 s         |        164 s         |    5 ms    |
 | Flux (GPU)    |     12 s         |        150 s         |    5 ms    |
 | PyTorch (GPU) |     12 s         |        120 s         |    2 ms    |
 
 * - total time includes 10 epochs + compilation time
+
+Note that in the test on GPU Lilith has longest compilation time and thus
+longest total training time _after 10 epochs_. However, time per epoch
+is the lowest, so Lilith is typically the fastest one in longer run.
+
 
 
 ### Variational Autoencoder
@@ -73,9 +79,10 @@ Code available [here](https://github.com/dfdx/Lilith.jl/tree/master/benchmarks/v
 |               | training 1 epoch | training total time  | prediction |
 | ------------- | ---------------- | -------------------- | ---------- |
 | Lilith (CPU)  |     50 s         |        535 s         |   395 μs   |
-| Lilith (GPU)  |      3 s         |         93 s         |   194 μs   |
 | Flux (CPU)    |    948 s         |        158 min       |    81 ms   |
+| ------------- | ---------------- | -------------------- | ---------- |
+| Lilith (GPU)  |      3 s         |         93 s         |   194 μs   |
 | Flux (GPU)**  |     ---          |          ---         |     ---    |
-| PyTorch (GPU) |
+| PyTorch (GPU) |      7 s         |         66 s         |   501 µs   |
 
 ** - VAE example from the Flux zoo doesn't work on GPU
