@@ -43,8 +43,18 @@ Negative log-likelihood.
 This method takes list of classes `c` as one-hot encoded matrix, i.e. each column contains
 exactly one 1.0 at position corresponding to true class
 """
-function nllloss(ŷ::AbstractMatrix, c::AbstractMatrix{<:Real})
-    return -sum(ŷ .* c) / size(ŷ, 2)
+function nllloss(ŷ::AbstractMatrix, y::AbstractMatrix{<:Real})
+    return -sum(ŷ .* y) / size(ŷ, 2)
+end
+
+function ∇nllloss(dy::Real, ŷ::AbstractMatrix, y::AbstractMatrix{<:Real})
+    p = ŷ .* y
+    s = sum(p)
+    scale = -1 / size(ŷ, 2)
+    ∇s = Yota.sum_grad(p, scale)
+    ∇ŷ = Yota.unbroadcast_prod_x(ŷ, y, ∇s)
+    # ∇y = Yota.unbroadcast_prod_y(ŷ, y, ∇s)
+    return ∇ŷ
 end
 
 
