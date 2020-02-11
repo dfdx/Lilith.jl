@@ -86,3 +86,27 @@ Code available [here](https://github.com/dfdx/Lilith.jl/tree/master/benchmarks/v
 | PyTorch (GPU) |      7 s         |         66 s         |   501 µs   |
 
 `**` - VAE example from the Flux zoo doesn't work on GPU
+
+
+## API Stability
+
+One of the central ideas behind Lilith is the ability to reuse existing code instead of writing everything from scratch.
+To facilitate it, Lilith is committed to high, although not absolute backward compatibility. The following table
+outlines stability level you should expect from various components of the library.
+
+| Component       | API Stable? |
+| --------------- | ----------- |
+| Basic layers    | Yes         |
+| CNN             | Yes         |
+| RNN             | No*         |
+| Losses          | Mostly      |
+| Activations     | Yes         |
+| Initializations | Mostly      | 
+| Optimizers      | Yes         |
+| Device API      | Yes         |
+| Fitting API     | No**        |
+
+`*` - currently Lilith provides only basic implementations of vanilla RNN, LSTM and GRU; this implementation will be improved in future version and made more compatible with PyTorch version, but currently it cannot be considered stable
+`**` - function `fit!()` provides a convenient shortcut for training supervised learning models, but in its current state it's too basic for most real use cases; for more durable code consider writing your own method for training using `fit!()` as a template
+
+Please note that until version 1.0 "stable API" means that we will try our best to keep it unchanged, but we reserve the right to the break the rule in some rare and exceptional cases. 
