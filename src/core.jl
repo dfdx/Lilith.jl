@@ -1,7 +1,6 @@
 using Yota
 using Base.Iterators
 using Statistics
-using Distributions
 using MLDataUtils
 import NNlib
 using CUDAapi
