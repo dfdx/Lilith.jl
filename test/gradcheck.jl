@@ -13,9 +13,19 @@ function ngradient(f, xs::AbstractArray...)
   return grads
 end
 
-gradcheck(f, xs...) =
-  all(isapprox.(ngradient(f, xs...),
-                collect(grad(f, xs...)[2]), rtol = 1e-5, atol = 1e-5))
+
+function gradcheck(f, xs...; tol=1e-5)
+    ng = ngradient(f, xs...)
+    g = collect(grad(f, xs...)[2])
+    for i in 1:length(ng)
+        eq = isapprox(ng[i], g[i], rtol=tol, atol=tol)
+        # println(eq)
+        if !eq
+            return false
+        end
+    end
+    return true
+end
 
 
 function check_convergence(f, args...; p=1, verbose=false, lr=1e-4, epochs=100)

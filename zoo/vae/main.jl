@@ -65,7 +65,7 @@ function vae_cost(m::VAE, eps, x)
     z = mu .+ sqrt.(exp.(log_sigma2)) .* eps
     x_rec = decode(m, z)
     # loss
-    rec_loss = -sum(x .* log.(1e-10 .+ x_rec) .+ (1 .- x) .* log.(1e-10 + 1.0 .- x_rec); dims=1)
+    rec_loss = -sum(x .* log.(1e-10 .+ x_rec) .+ (1 .- x) .* log.(1e-10 + 1.0 .- x_rec); dims=1)  # BCE
     KLD = -0.5 .* sum(1 .+ log_sigma2 .- mu .^ 2.0f0 - exp.(log_sigma2); dims=1)
     cost = mean(rec_loss .+ KLD)
 end

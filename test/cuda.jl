@@ -19,6 +19,8 @@ end
 
 
 @testset "cuda: batchnorm" begin
+    Random.seed!(898);
+
     m = BatchNorm2d(3)
     x = rand(10, 10, 3, 5)
     d_m = device(m)
@@ -48,6 +50,8 @@ end
 
 
 @testset "cuda: RNN" begin
+    Random.seed!(128);
+
     # vanilla RNN
     m = RNN(10 => 5); x_seq = ones(10, 4, 10); h = init_hidden(m, 4)
     _, g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
