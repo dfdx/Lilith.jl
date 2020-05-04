@@ -5,7 +5,7 @@
 
 **Lilith** is a deep learning library in Julia with focus on **high performance** and **interoperability with existing DL frameworks**. Its main features include:
 
-* tracing autograd engine - models are just structs, transformations are just functioins
+* tracing autograd engine - models are just structs, transformations are just functions
 * optimizing code generator based on hackable computational graph
 * GPU support
 * layer API similar to PyTorch's to ease translation of existing Python code to Julia
