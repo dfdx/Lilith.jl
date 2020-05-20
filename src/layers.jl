@@ -53,6 +53,48 @@ end
 #                           Convolutions                                       #
 ################################################################################
 
+# Although internall 1D, 2D and 3D convolutions use the same convNd method,
+# we keep different wrappers to make API easier to understand
+
+################################# Conv1D #######################################
+
+mutable struct Conv1d
+    W::AbstractArray{T,3} where T
+    b::Union{AbstractVector{T} where T, Nothing}
+    stride
+    padding
+    dilation
+end
+
+function Conv1d(in_channels::Int, out_channels::Int, kernel_size::Int;
+                stride=1, padding=0, dilation=1, bias=true)
+    kernel_tuple = (kernel_size,)
+    # init weights same as in https://pytorch.org/docs/stable/nn.html#conv2d
+    k_sqrt = sqrt(1 / (in_channels * prod(kernel_tuple)))
+    d = Uniform(-k_sqrt, k_sqrt)
+    W = rand(d, kernel_tuple..., in_channels, out_channels)
+    b = bias ? rand(d, out_channels) : nothing
+    return Conv1d(W, b, stride, padding, dilation)
+end
+Conv1d(in_out::Pair{Int, Int}, k) = Conv1d(in_out[1], in_out[2], k)
+
+
+function Base.show(io::IO, c::Conv1d)
+    k1, i, o = size(c.W)
+    print(io, "Conv1d($i=>$o, $(k1))")
+end
+
+function (c::Conv1d)(x::AbstractArray{T,3}) where T
+    y = convNd(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
+    if c.b != nothing
+        y = y .+ reshape(c.b, (1, length(c.b), 1))  # TODO: check for 1D and 3D!
+    end
+    return y
+end
+
+
+################################# Conv2D #######################################
+
 mutable struct Conv2d
     W::AbstractArray{T,4} where T
     b::Union{AbstractVector{T} where T, Nothing}
@@ -71,20 +113,56 @@ function Conv2d(in_channels::Int, out_channels::Int, kernel_size::Union{Int, NTu
     b = bias ? rand(d, out_channels) : nothing
     return Conv2d(W, b, stride, padding, dilation)
 end
+Conv2d(in_out::Pair{Int, Int}, k) = Conv2d(in_out[1], in_out[2], k)
 
 function Base.show(io::IO, c::Conv2d)
     k1, k2, i, o = size(c.W)
-    print(io, "Conv2d($(k1)x$(k2), $i=>$o)")
+    print(io, "Conv2d($i=>$o, $(k1)x$(k2))")
 end
 
-function (c::Conv2d)(x::AbstractArray{T,4}) where T    
-    y = conv2d(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
+function (c::Conv2d)(x::AbstractArray{T,4}) where T
+    y = convNd(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
     if c.b != nothing
         y = y .+ reshape(c.b, (1, 1, length(c.b), 1))
     end
     return y
 end
 
+
+################################# Conv3D #######################################
+
+mutable struct Conv3d
+    W::AbstractArray{T,5} where T
+    b::Union{AbstractVector{T} where T, Nothing}
+    stride
+    padding
+    dilation
+end
+
+function Conv3d(in_channels::Int, out_channels::Int, kernel_size::Union{Int, NTuple{2, Int}};
+                stride=1, padding=0, dilation=1, bias=true)
+    kernel_tuple = kernel_size isa Tuple ? kernel_size : (kernel_size, kernel_size, kernel_size)
+    # init weights same as in https://pytorch.org/docs/stable/nn.html#conv2d
+    k_sqrt = sqrt(1 / (in_channels * prod(kernel_tuple)))
+    d = Uniform(-k_sqrt, k_sqrt)
+    W = rand(d, kernel_tuple..., in_channels, out_channels)
+    b = bias ? rand(d, out_channels) : nothing
+    return Conv3d(W, b, stride, padding, dilation)
+end
+Conv3d(in_out::Pair{Int, Int}, k) = Conv3d(in_out[1], in_out[2], k)
+
+function Base.show(io::IO, c::Conv3d)
+    k1, k2, k3, i, o = size(c.W)
+    print(io, "Conv3d($i=>$o, $(k1)x$(k2)x$(k3))")
+end
+
+function (c::Conv3d)(x::AbstractArray{T,5}) where T
+    y = convNd(x, c.W; stride=c.stride, padding=c.padding, dilation=c.dilation)
+    if c.b != nothing
+        y = y .+ reshape(c.b, (1, 1, length(c.b), 1))
+    end
+    return y
+end
 
 
 ################################################################################

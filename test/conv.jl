@@ -1,7 +1,18 @@
 @testset "conv" begin
+    # 1D
+    x = rand(7, 3, 10); w = rand(3, 3, 1)
+    @test gradcheck((x, w) -> sum(conv1d(x, w)), x, w; tol=1e-4)
+    @test gradcheck((x, w) -> sum(conv1d(x, w; padding=1, stride=2)), x, w; tol=1e-4)
+
+    # 2D
     x = rand(7, 7, 3, 10); w = rand(3, 3, 3, 1)
     @test gradcheck((x, w) -> sum(conv2d(x, w)), x, w; tol=1e-4)
     @test gradcheck((x, w) -> sum(conv2d(x, w; padding=1, stride=2)), x, w; tol=1e-4)
+
+    # 3D
+    x = rand(7, 7, 7, 3, 10); w = rand(3, 3, 3, 3, 1)
+    @test gradcheck((x, w) -> sum(conv3d(x, w)), x, w; tol=1e-4)
+    @test gradcheck((x, w) -> sum(conv3d(x, w; padding=1, stride=2)), x, w; tol=1e-4)
 end
 
 @testset "pooling" begin

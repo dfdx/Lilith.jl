@@ -1,3 +1,18 @@
+
+"""
+getbatch(dataset, i::Int, sz::Int)
+
+Get batch of data from the specified dataset.
+
+ * i - batch index
+ * sz - size of the batch
+
+Typical implementation for continuous datasets:
+
+    start = (i-1)*sz + 1
+    finish = min(i*sz, length(dataset))
+    return start <= finish ? dataset[start:finish] : nothing
+"""
 function getbatch(a::AbstractArray{T,N}, i::Int, sz::Int; batch_dim=ndims(a)) where {T,N}
     start = (i-1)*sz + 1
     finish = min(i*sz, size(a, batch_dim))

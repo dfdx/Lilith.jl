@@ -60,10 +60,14 @@ function forward(m::RNN, x_seq::AbstractArray{T, 3}, h::AbstractArray{T, 2}) whe
     device = Yota.guess_device([h])
     inp_size, batch, seq_len = size(x_seq)
     hid_size = length(m.cell.b_hh)
-    h_all = device(zeros(1 * hid_size, batch, 0))
     h_all_sz = (size(h)..., 1)
     cell = m.cell
-    for i=1:size(x_seq, 3)
+    # 1st element
+    x = x_seq[:, :, 1]
+    h = forward(cell, x, h)
+    h_all = reshape(h, h_all_sz)
+    # all other elements        
+    for i=2:size(x_seq, 3)
         x = x_seq[:, :, i]
         h = forward(cell, x, h)
         h_all = cat(h_all, reshape(h, h_all_sz); dims=3)
@@ -145,11 +149,15 @@ end
 function forward(m::LSTM, x_seq::AbstractArray{T, 3}, h::AbstractArray{T, 2}, c::AbstractArray{T, 2}) where T
     device = Yota.guess_device([h])
     inp_size, batch, seq_len = size(x_seq)
-    hid_size = size(h, 1)
-    h_all = device(zeros(1 * hid_size, batch, 0))
+    hid_size = size(h, 1)    
     h_all_sz = (size(h)..., 1)
     cell = m.cell
-    for i=1:size(x_seq, 3)
+    # 1st element
+    x = x_seq[:, :, 1]
+    h, c = forward(cell, x, h, c)
+    h_all = reshape(h, h_all_sz)
+    # all other elements
+    for i=2:size(x_seq, 3)
         x = x_seq[:, :, i]
         h, c = forward(cell, x, h, c)
         h_all = cat(h_all, reshape(h, h_all_sz); dims=3)
@@ -223,11 +231,14 @@ end
 function forward(m::GRU, x_seq::AbstractArray{T, 3}, h::AbstractArray{T, 2}) where T
     device = Yota.guess_device([h])
     inp_size, batch, seq_len = size(x_seq)
-    hid_size = size(h, 1)
-    h_all = device(zeros(1 * hid_size, batch, 0))
+    hid_size = size(h, 1)    
     h_all_sz = (size(h)..., 1)
     cell = m.cell
-    for i=1:size(x_seq, 3)
+    # 1st element
+    x = x_seq[:, :, 1]
+    h = forward(cell, x, h)
+    h_all = reshape(h, h_all_sz)
+    for i=2:size(x_seq, 3)
         x = x_seq[:, :, i]
         h = forward(cell, x, h)
         h_all = cat(h_all, reshape(h, h_all_sz); dims=3)

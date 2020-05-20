@@ -13,10 +13,18 @@
     gs = grad((s, x) -> sum(s(x)), s, x)[2]
     @test gp[1][(:W,)] == gs[1][(:seq, 1, :W)]
     @test gp[2][(:b,)] == gs[1][(:seq, 2, :b)]
+
+    # Conv1d
+    x = rand(7, 3, 10); c = Conv1d(3 => 5, 3)
+    @test grad((x, w) -> sum(conv1d(x, w)), x, c.W)[2][2] == grad((x, c) -> sum(c(x)), x, c)[2][2][(:W,)]
     
     # Conv2d
-    x = rand(7, 7, 3, 10); c = Conv2d(3, 5, 3)
+    x = rand(7, 7, 3, 10); c = Conv2d(3 => 5, 3)
     @test grad((x, w) -> sum(conv2d(x, w)), x, c.W)[2][2] == grad((x, c) -> sum(c(x)), x, c)[2][2][(:W,)]
+
+    # Conv3d
+    x = rand(7, 7, 7, 3, 10); c = Conv3d(3 => 5, 3)
+    @test grad((x, w) -> sum(conv3d(x, w)), x, c.W)[2][2] == grad((x, c) -> sum(c(x)), x, c)[2][2][(:W,)]
 
     # NLLLoss
     x = rand(5, 4); x = log.(x ./ sum(x; dims=1)); c = [3, 2, 1, 4, 5]
