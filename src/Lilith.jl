@@ -9,7 +9,9 @@ export
     init_constant!,
     init_kaiming_normal!,
     # conv
+    conv1d,
     conv2d,
+    conv3d,
     maxpool2d,
     # activations
     logistic,
@@ -33,7 +35,9 @@ export
     Linear,
     Sequential,
     # conv layers
+    Conv1d,
     Conv2d,
+    Conv3d,
     # batchnorm
     BatchNorm2d,
     # RNN layers
