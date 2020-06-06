@@ -76,7 +76,7 @@ crossentropyloss(x::AbstractMatrix, c::Union{AbstractMatrix{<:Real}, AbstractVec
 #                                 Mean Squared Loss                            #
 ################################################################################
 
-mseloss(inp::AbstractMatrix, target::AbstractMatrix) = mean((inp .- target) .^ 2)
+mseloss(inp::AbstractArray, target::AbstractArray) = mean((inp .- target) .^ 2)
 
 
 function register_loss_derivs()

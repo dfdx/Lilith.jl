@@ -58,6 +58,11 @@ end
 
 ################################# Conv1D #######################################
 
+"""
+1D convolutional layer.
+
+Input and output dimensions: (sequence_length, channels, batch_size)
+"""
 mutable struct Conv1d
     W::AbstractArray{T,3} where T
     b::Union{AbstractVector{T} where T, Nothing}
@@ -193,7 +198,7 @@ end
 Base.show(io::IO, loss::MSELoss) = print(io, "MSELoss()")
 
 
-(loss::MSELoss)(x::AbstractMatrix, x_target::AbstractMatrix) = mseloss(x, x_target)
+(loss::MSELoss)(x::AbstractArray, x_target::AbstractArray) = mseloss(x, x_target)
 
 
 ################################################################################
