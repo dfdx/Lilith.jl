@@ -5,6 +5,7 @@ using MLDataUtils
 using Distributions
 import NNlib
 using CUDAapi
+using ProtoBuf
 
 
 include("utils.jl")
@@ -19,6 +20,7 @@ include("optim.jl")
 include("device.jl")
 include("fit.jl")
 include("metrics.jl")
+include("onnx.jl")
 
 
 if has_cuda()
