@@ -7,7 +7,7 @@ using Test
 import CUDAapi.has_cuda
 
 
-Random.seed!(42);
+Random.seed!(108);
 
 include("gradcheck.jl")
 include("conv.jl")
