@@ -5,7 +5,7 @@ abstract type Optimizer end
 
 
 function Yota.update!(opt::Optimizer, m, gm; ignore=Set())
-    for (path, gx) in gm
+    for (path, gx) in Yota.path_value_pairs(gm)
         if !in(path, ignore)
             x_t0 = Yota.getfield_nested(m, path)
             x_t1 = make_update!(opt, path, x_t0, gx)

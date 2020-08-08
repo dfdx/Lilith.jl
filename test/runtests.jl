@@ -4,7 +4,7 @@ import Lilith: RNNCell, LSTMCell, GRUCell, rnn_forward, lstm_forward, gru_forwar
 import Lilith: ∇batchnorm2d
 using Random
 using Test
-import CUDAapi.has_cuda
+import CUDA
 
 
 Random.seed!(108);
@@ -18,6 +18,6 @@ include("layers.jl")
 include("optim.jl")
 include("metrics.jl")
 
-if has_cuda()
+if CUDA.functional()
     include("cuda.jl")
 end
