@@ -1,12 +1,10 @@
 name = "Lilith"
 uuid = "94c2ca8e-d4e4-11e9-02ac-43cfcaaaed17"
 authors = ["Andrei Zhabinski <andrei.zhabinski@gmail.com>"]
-version = "0.2.1"
+version = "0.3.0"
 
 [deps]
-CUDAapi = "3895d2a7-ec45-59b8-82bb-cfc6a382f9b3"
-CUDAnative = "be33ccc6-a3ff-5ff2-a52e-74243cff1e17"
-CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MLDataUtils = "cc2ba9b6-d476-5e6d-8eaf-a92d5412d41d"
@@ -17,11 +15,9 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Yota = "cd998857-8626-517d-b929-70ad188a48f0"
 
 [compat]
-CUDAapi = "2.0, 4"
-CUDAnative = "2.6, 3"
-CuArrays = "1.5, 2"
+CUDA = "1.2.1"
 Distributions = "0.23.2"
 MLDataUtils = "0.5.0"
 NNlib = "0.6.6"
-Yota = "0.3.0"
-julia = "1"
+Yota = "0.4.1"
+julia = "1.4"

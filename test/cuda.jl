@@ -58,8 +58,8 @@ end
     _, g = grad((m, x) -> sum(m(x)), m, x)
     _, d_g = grad((m, x) -> sum(m(x)), d_m, d_x)
 
-    @test isapprox(g[1][(:gamma,)], cpu(d_g[1][(:gamma,)]); rtol=1e-2, atol=1e-4)
-    @test isapprox(g[1][(:beta,)], cpu(d_g[1][(:beta,)]); rtol=1e-2, atol=1e-4)
+    @test isapprox(g[1].gamma, cpu(d_g[1].gamma); rtol=1e-2, atol=1e-4)
+    @test isapprox(g[1].beta, cpu(d_g[1].beta); rtol=1e-2, atol=1e-4)
     @test isapprox(g[2], cpu(d_g[2]); rtol=1e-2, atol=1e-4)
 
 end
@@ -73,21 +73,21 @@ end
     _, g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
     d_m, d_x_seq, d_h = map(device, (m, x_seq, h))
     _, d_g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, d_m, d_x_seq, d_h)
-    @test g[1][(:cell, :W_ih)] ≈ cpu(d_g[1][(:cell, :W_ih)])
+    @test g[1].cell.W_ih ≈ cpu(d_g[1].cell.W_ih)
 
     # LSTM
     m = LSTM(10 => 5); x_seq = ones(10, 4, 10); h, c = init_hidden(m, 4)
     _, g = grad((m, x_seq, h, c) -> begin h_all, h, c = m(x_seq, h, c); sum(h) end, m, x_seq, h, c)
     d_m, d_x_seq, d_h, d_c = map(device, (m, x_seq, h, c))
     _, d_g = grad((m, x_seq, h, c) -> begin h_all, h, c = m(x_seq, h, c); sum(h) end, d_m, d_x_seq, d_h, d_c)
-    @test g[1][(:cell, :W_ih)] ≈ cpu(d_g[1][(:cell, :W_ih)])
+    @test g[1].cell.W_ih ≈ cpu(d_g[1].cell.W_ih)
 
     # GRU
     m = GRU(10 => 5); x_seq = ones(10, 4, 10); h = init_hidden(m, 4)
     _, g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, m, x_seq, h)
     d_m, d_x_seq, d_h = map(device, (m, x_seq, h))
     _, d_g = grad((m, x_seq, h) -> begin h_all, h = m(x_seq, h); sum(h_all) end, d_m, d_x_seq, d_h)
-    @test g[1][(:cell, :W_ih)] ≈ cpu(d_g[1][(:cell, :W_ih)])
+    @test g[1].cell.W_ih ≈ cpu(d_g[1].cell.W_ih)
 
 end
 

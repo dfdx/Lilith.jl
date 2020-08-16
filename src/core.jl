@@ -4,7 +4,7 @@ using Statistics
 using MLDataUtils
 using Distributions
 import NNlib
-using CUDAapi
+using CUDA
 
 
 include("utils.jl")
@@ -21,12 +21,11 @@ include("fit.jl")
 include("metrics.jl")
 
 
-if has_cuda()
+if CUDA.functional()
     try
         include("cuda.jl")
     catch ex
-        # something is wrong with the user's set-up (or there's a bug in CuArrays)
-        @warn "CUDA is installed, but CuArrays.jl fails to load" exception=(ex,catch_backtrace())
+        @warn "CUDA is installed, but not working properly" exception=(ex,catch_backtrace())
     end
 end
 

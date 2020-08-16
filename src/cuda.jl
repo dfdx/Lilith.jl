@@ -1,5 +1,6 @@
-using CuArrays
-using CUDAnative
+# using CuArrays
+# using CUDAnative
+import CUDA.CUDNN
 
 # CuArrays doesn't provide a dedicated version of conv() for CuArrays, and so call to
 # NNlib.conv(CuArray(), CuArray()) leads to CPU-based algorithm on GPU arrays, which is terribly slow.
@@ -13,19 +14,19 @@ using CUDAnative
 function conv2d(x::CuArray{T,4}, w::CuArray{T,4}; stride=1, padding=0, dilation=1) where T
     cdims = DenseConvDims(x, w; stride=stride, padding=padding, dilation=dilation)
     y = similar(x, NNlib.output_size(cdims)..., NNlib.channels_out(cdims), size(x, 4))
-    return CuArrays.conv!(y, x, w, cdims)
+    return CUDNN.conv!(y, x, w, cdims)
 end
 
 function ∇conv2d_w(dy::CuArray{T,4}, x::CuArray{T,4}, w::CuArray{T,4}; stride=1, padding=0, dilation=1) where T
     cdims = DenseConvDims(x, w; stride=stride, padding=padding, dilation=dilation)
     dw = similar(w)
-    return CuArrays.∇conv_filter!(dw, x, dy, cdims)
+    return CUDNN.∇conv_filter!(dw, x, dy, cdims)
 end
 
 function ∇conv2d_x(dy::CuArray{T,4}, x::CuArray{T,4}, w::CuArray{T,4}; stride=1, padding=0, dilation=1) where T
     cdims = DenseConvDims(x, w; stride=stride, padding=padding, dilation=dilation)
     dx = similar(x)
-    return CuArrays.∇conv_data!(dx, dy, w, cdims)
+    return CUDNN.∇conv_data!(dx, dy, w, cdims)
 end
 
 
@@ -34,7 +35,7 @@ end
 function maxpool2d(x::CuArray, kernel_size; stride=kernel_size, padding=0, dilation=1)
     pdims = PoolDims(x, kernel_size; stride=stride, padding=padding, dilation=dilation)
     y = similar(x, NNlib.output_size(pdims)..., NNlib.channels_out(pdims), size(x, 4))
-    return CuArrays.maxpool!(y, x, pdims)
+    return CUDNN.maxpool!(y, x, pdims)
 end
 
 function ∇maxpool2d_x(dy::CuArray, y::CuArray, x::CuArray, kernel_size; stride=kernel_size, padding=0, dilation=1)
@@ -46,32 +47,32 @@ end
 
 ## activations
 
-culogistic(x) = one(x) / (one(x) + CUDAnative.exp(-x))
-CuArrays.cufunc(::typeof(logistic)) = culogistic
+culogistic(x) = one(x) / (one(x) + CUDA.exp(-x))
+CUDA.cufunc(::typeof(logistic)) = culogistic
 
 ∇culogistic(dy, x) = culogistic(x) * (one(x) - culogistic(x)) * dy
-CuArrays.cufunc(::typeof(∇logistic)) = ∇culogistic
+CUDA.cufunc(::typeof(∇logistic)) = ∇culogistic
 
-cusoftplus(x) = CUDAnative.log(CUDAnative.exp(x) + one(x))
-CuArrays.cufunc(::typeof(softplus)) = cusoftplus
+cusoftplus(x) = CUDA.log(CUDA.exp(x) + one(x))
+CUDA.cufunc(::typeof(softplus)) = cusoftplus
 
 ∇cusoftplus(dy, x) = culogistic(x) * dy
-CuArrays.cufunc(::typeof(∇softplus)) = ∇cusoftplus
+CUDA.cufunc(::typeof(∇softplus)) = ∇cusoftplus
 
-∇cuelu(dy, x::Real, alpha) = ifelse(x >= 0, x/1, alpha * CUDAnative.exp(x))
-CuArrays.cufunc(::typeof(∇elu)) = ∇cuelu
+∇cuelu(dy, x::Real, alpha) = ifelse(x >= 0, x/1, alpha * CUDA.exp(x))
+CUDA.cufunc(::typeof(∇elu)) = ∇cuelu
 
 
 ## batchnorm
 
 function batchnorm_impl(gamma::CuArray, beta::CuArray, x::CuArray,
                         mu::CuArray, sigma2::CuArray, momentum::Real; eps, training)    
-    CuArrays.CUDNN.batchnorm(gamma, beta, x, mu, sigma2, momentum; eps=eps, training=training)
+    CUDNN.batchnorm(gamma, beta, x, mu, sigma2, momentum; eps=eps, training=training)
 end
 
 function ∇batchnorm_impl(gamma::CuArray, beta::CuArray, x::CuArray, dy::CuArray,
                          mu::CuArray, sigma2::CuArray, momentum; eps, training)
-    CuArrays.CUDNN.∇batchnorm(gamma, beta, x, dy, mu, sigma2, momentum; eps=eps, training=training)
+    CUDNN.∇batchnorm(gamma, beta, x, dy, mu, sigma2, momentum; eps=eps, training=training)
 end
                     
 
