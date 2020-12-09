@@ -1,5 +1,8 @@
 # Lilith
 
+> :warning: **This package has been renamed to [Avalon.jl](https://github.com/dfdx/Avalon.jl), all new features will be added there**
+
+
 [![Build Status](https://travis-ci.org/dfdx/Lilith.jl.svg?branch=master)](https://travis-ci.org/dfdx/Lilith.jl)
 
 
